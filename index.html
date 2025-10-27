@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My JavaScript Development</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    :root {
+      --bg: #ffffff;
+      --text: #222;
+      --accent: #0077ff;
+    }
+
+    .dark {
+      --bg: #121212;
+      --text: #e5e5e5;
+      --accent: #4da6ff;
+    }
+
+    header {
+      background: var(--accent);
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+
+    article {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: var(--accent);
+    }
+
+    #theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #theme-toggle:hover {
+      opacity: 0.8;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Article Hub</h1>
+  </header>
+
+  <button id="theme-toggle">🌙 Dark Mode</button>
+
+  <main>
+    <article id="article">
+      <h2>Loading article...</h2>
+    </article>
+  </main>
+
+  <footer>
+    &copy; 2025 My Article Page
+  </footer>
+
+  <script>
+    // Example article data
+    const articleData = {
+      title: "Javascript Progress",
+      author: "1ScratchfromScratch",
+      date: "October 27, 2025",
+      content: `
+        <p>I have just started and I needed help setting up this page despite that this is not my first project</p>
+      `
+    };
+
+    // Load the article dynamically
+    const articleElement = document.getElementById("article");
+    articleElement.innerHTML = `
+      <h2>${articleData.title}</h2>
+      <p><strong>By ${articleData.author}</strong> — ${articleData.date}</p>
+      ${articleData.content}
+    `;
+
+    // Theme toggle
+    const toggleButton = document.getElementById("theme-toggle");
+    toggleButton.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      const isDark = document.body.classList.contains("dark");
+      toggleButton.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+    });
+  </script>
+</body>
+</html>
