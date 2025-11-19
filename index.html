@@ -7,7 +7,59 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0;font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; user-select:none}
   html,body{height:100%;width:100%;overflow:hidden;background:#111;}
+  /* Body locked class hides UI immediately to avoid flash */
+  body.locked { overflow: hidden; }
+  body.locked .window,
+  body.locked .taskbar,
+  body.locked .start-menu { visibility: hidden; }
+
   .wallpaper { position:absolute; inset:0; background: url("WALLPEPPA.jpeg") center/cover no-repeat; z-index:0; }
+
+  /* LOGIN SCREEN (ADDED) */
+  #loginScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("WALLPEPPA.jpeg") center/cover no-repeat;
+    background-size: cover;
+  }
+  #loginCard {
+    width: 420px;
+    max-width: 92%;
+    padding: 28px;
+    border-radius: 12px;
+    background: rgba(2,6,23,0.48);
+    box-shadow: 0 24px 80px rgba(2,6,23,0.7);
+    border: 1px solid rgba(255,255,255,0.04);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+    color:#fff;
+  }
+  .login-photo{ width:120px;height:120px;border-radius:999px;overflow:hidden;border:4px solid rgba(255,255,255,0.08);display:grid;place-items:center;background:#eee; }
+  .login-photo img{ width:100%;height:100%;object-fit:cover;display:block; }
+  .login-name{ font-size:20px;font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,0.45) }
+  .login-sub{ font-size:13px;color:rgba(255,255,255,0.85);margin-top:-6px }
+  .pin-input { width:100%; max-width:360px; display:flex; flex-direction:column; gap:8px; }
+  .pin-input input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.06);
+    background: rgba(0,0,0,0.35);
+    color:#fff;
+    font-size:16px;
+    outline:none;
+    text-align:center;
+  }
+  .pin-actions{ display:flex; gap:8px; width:100%; justify-content:center; margin-top:6px; }
+  .btn-ghost{ padding:8px 12px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.08); color:#fff; cursor:pointer }
+  .btn-primary{ padding:8px 12px; border-radius:8px; background:linear-gradient(180deg,#0b84ff,#0463d6); border:0; color:#fff; cursor:pointer }
+  .login-hint{ font-size:12px; color:rgba(255,255,255,0.75); margin-top:6px }
 
   /* Taskbar (kept simple) */
   .taskbar{position:absolute;left:0;right:0;bottom:0;height:55px;background:rgba(255,255,255,0.20);backdrop-filter:blur(16px);display:flex;align-items:center;padding:6px 12px;gap:12px;z-index:50}
@@ -54,21 +106,226 @@
   /* Resizer */
   .resizer{position:absolute;right:10px;bottom:10px;width:12px;height:12px;cursor:se-resize}
 
-  /* Responsive */
+  /* FULLSCREEN STYLE (minimal and non-invasive) */
+  .window.fullscreen {
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: calc(100vh - 55px) !important; /* leave taskbar visible */
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+  .window.fullscreen .resizer { display: none !important; }
+  .window.fullscreen .titlebar { cursor: default; }
+
+  /* Start menu (new additions earlier) */
+  .start-menu {
+    position: absolute;
+    bottom: 62px; /* sits slightly above the taskbar */
+    left: 12px;   /* align with Start button area (tweak if needed) */
+    width: 880px;
+    height: 520px;
+    background: linear-gradient(180deg,#ffffffee,#f5f7fb);
+    border-radius: 12px;
+    box-shadow: 0 30px 80px rgba(2,6,23,0.6);
+    border: 1px solid rgba(0,0,0,0.06);
+    display: none;
+    z-index: 200;
+    overflow: hidden;
+    color: #0b253a;
+    backdrop-filter: blur(6px);
+  }
+
+  .start-inner { display:flex; height:100%; }
+  .start-left {
+    width: 260px;
+    border-right: 1px solid rgba(0,0,0,0.04);
+    background: linear-gradient(180deg,#f7fafc,#fff);
+    padding: 16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .start-search {
+    display:flex; align-items:center; gap:8px;
+    background:#fff; border-radius:8px; padding:8px; border:1px solid rgba(0,0,0,0.04);
+  }
+  .start-search input{ border:0; outline:none; width:100%; font-size:14px; background:transparent; }
+  .start-profile { display:flex; align-items:center; gap:10px; padding-top:6px; }
+  .profile-pic { width:40px; height:40px; border-radius:999px; background:linear-gradient(180deg,#e6eefb,#d9e6ff); display:grid; place-items:center; font-weight:700; color:#11477a; }
+  .app-list { flex:1; overflow:auto; padding-right:6px; margin-top:6px; }
+  .app-list .app-item { display:flex; align-items:center; gap:12px; padding:8px 6px; border-radius:6px; cursor:pointer; color:#123145; font-size:14px; }
+  .app-list .app-item:hover { background: rgba(0,0,0,0.03); }
+
+  .start-right { flex:1; padding:18px; display:flex; flex-direction:column; gap:12px; }
+  .tiles-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+  .tile {
+    height:76px; border-radius:8px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; padding:10px; color:white; font-weight:600; box-shadow: inset 0 -30px 40px rgba(0,0,0,0.06);
+  }
+  .tile.small { height:76px; }
+  .tile .t-icon { width:34px; height:34px; border-radius:8px; display:grid; place-items:center; margin-bottom:6px; background:rgba(255,255,255,0.12); }
+  .tile.office{ background: linear-gradient(180deg,#2b6dde,#1f4fd3); }
+  .tile.edge{ background: linear-gradient(180deg,#0ea5a5,#028f8f); }
+  .tile.photos{ background: linear-gradient(180deg,#6b21a8,#8b5cf6); }
+  .tile.netflix{ background: linear-gradient(180deg,#111827,#ef4444); }
+  .tile.store{ background: linear-gradient(180deg,#0ea5a5,#1fb5b5); color:#042f2f; }
+  .tile.spotify{ background: linear-gradient(180deg,#1db954,#1db954); }
+
+  .start-footer { display:flex; justify-content:space-between; font-size:12px; color:#4b657a; padding-top:6px; }
+
+  /* small screens */
+  @media (max-width:1000px){
+    .start-menu { left: 8px; right:8px; width:auto; }
+    .tiles-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Responsive (existing) */
   @media (max-width:960px){
     .window{left:8px;top:8px;right:8px;width:calc(100% - 16px);height:calc(100% - 80px)}
     .sidebar{width:260px}
   }
 </style>
 </head>
-<body>
+
+<!-- NOTE: body starts locked to prevent any UI flash; JS will remove 'locked' after successful login -->
+<body class="locked">
+
+<!-- LOGIN SCREEN (ADDED) -->
+<div id="loginScreen" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div id="loginCard" role="document" aria-labelledby="loginName">
+    <div class="login-photo" aria-hidden="false">
+      <img src="profile.png" alt="Profile photo" />
+    </div>
+    <div style="text-align:center">
+      <div id="loginName" class="login-name">TheBestAtCoding</div>
+      <div class="login-sub">Enter your PIN to sign in</div>
+    </div>
+
+    <div class="pin-input" style="width:100%">
+      <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN" aria-label="PIN" autocomplete="off" />
+      <div class="pin-actions">
+        <button id="pinCancel" class="btn-ghost" type="button">Cancel</button>
+        <button id="pinSubmit" class="btn-primary" type="button">Sign in</button>
+      </div>
+      <div class="login-hint">If you forgot your PIN, type <code>imthebest</code> into the box and sign in.</div>
+    </div>
+  </div>
+</div>
 
 <div class="wallpaper"></div>
+
+<!-- Start menu (unchanged earlier) -->
+<div id="startMenu" class="start-menu" role="menu" aria-hidden="true" aria-label="Start menu">
+  <div class="start-inner">
+    <div class="start-left" aria-hidden="false">
+      <div class="start-search" role="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:0.6"><path d="M21 21l-4.35-4.35" stroke="#234" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#234" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <input id="startSearch" placeholder="Type here to search" aria-label="Search" />
+      </div>
+
+      <div class="start-profile">
+        <div class="profile-pic">TB</div>
+        <div>
+          <div style="font-weight:700">TheBestAtCoding</div>
+          <div style="font-size:12px;color:#4b657a">Account</div>
+        </div>
+      </div>
+
+      <div class="app-list" id="startAppList" tabindex="0" aria-label="Pinned and installed apps">
+        <!-- left app list (sample items) -->
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#c7e0ff,#a6c8ff);display:inline-grid;place-items:center">📦</span> 3D Viewer</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#d4f1d4,#a8e6a8);display:inline-grid;place-items:center">🧮</span> Calculator</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#f9e7d6,#ffd8b6);display:inline-grid;place-items:center">📅</span> Calendar</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#f0f6ff,#d7e9ff);display:inline-grid;place-items:center">📷</span> Camera</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#fff3d6,#ffe1a8);display:inline-grid;place-items:center">🕒</span> Clock</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#e6f3ff,#cfe6ff);display:inline-grid;place-items:center">🔍</span> Cortana</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#fbe6ff,#f3c8ff);display:inline-grid;place-items:center">✉️</span> Mail</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#e6f7ff,#cfefff);display:inline-grid;place-items:center">🎧</span> Groove Music</div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#ffdbe6,#ffbfd6);display:inline-grid;place-items:center">⚙️</span> Settings</div>
+      </div>
+
+      <div style="padding-top:8px;">
+        <div class="app-item" style="font-size:13px;color:#556b88;justify-content:flex-start">Power</div>
+      </div>
+    </div>
+
+    <div class="start-right">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:700;font-size:16px">Productivity</div>
+        <div style="font-size:13px;color:#4b657a">Pinned</div>
+      </div>
+
+      <div class="tiles-grid" role="grid" aria-label="Pinned apps">
+        <div class="tile office" role="gridcell" title="Outlook">
+          <div class="t-icon">📧</div>
+          <div>Outlook</div>
+        </div>
+        <div class="tile office" role="gridcell" title="Word">
+          <div class="t-icon">W</div>
+          <div>Word</div>
+        </div>
+        <div class="tile office" role="gridcell" title="Excel">
+          <div class="t-icon">X</div>
+          <div>Excel</div>
+        </div>
+
+        <div class="tile edge" role="gridcell" title="OneDrive">
+          <div class="t-icon">☁️</div>
+          <div>OneDrive</div>
+        </div>
+        <div class="tile office" role="gridcell" title="PowerPoint">
+          <div class="t-icon">P</div>
+          <div>PowerPoint</div>
+        </div>
+        <div class="tile" role="gridcell" title="Microsoft To Do" style="background:linear-gradient(180deg,#4b5563,#56607a)">
+          <div class="t-icon">✓</div>
+          <div>To Do</div>
+        </div>
+
+        <div class="tile" role="gridcell" title="Office" style="background:linear-gradient(180deg,#d97706,#f59e0b)">
+          <div class="t-icon">⌘</div>
+          <div>Office</div>
+        </div>
+        <div class="tile" role="gridcell" title="Skype" style="background:linear-gradient(180deg,#60a5fa,#3b82f6)">
+          <div class="t-icon">S</div>
+          <div>Skype</div>
+        </div>
+        <div class="tile photos" role="gridcell" title="Photos">
+          <div class="t-icon">🖼️</div>
+          <div>Photos</div>
+        </div>
+
+        <div class="tile store" role="gridcell" title="Microsoft Store">
+          <div class="t-icon">🏬</div>
+          <div>Microsoft Store</div>
+        </div>
+        <div class="tile spotify" role="gridcell" title="Spotify">
+          <div class="t-icon">♪</div>
+          <div>Spotify</div>
+        </div>
+        <div class="tile netflix" role="gridcell" title="Disney+">
+          <div class="t-icon">★</div>
+          <div>Disney+</div>
+        </div>
+      </div>
+
+      <div class="start-footer">
+        <div>All apps</div>
+        <div>Quick access</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Taskbar -->
 <div class="taskbar" role="toolbar" aria-label="Taskbar">
   <div style="display:flex;gap:8px;align-items:center;">
-    <div id="startBtn" class="taskbar-icon" title="Start"><img src="https://img.icons8.com/fluency/48/windows-11.png" width="26" alt="Start"></div>
+    
+    <!-- ⭐ ONLY CHANGE ALREADY MADE EARLIER — YOUR LOGO HERE -->
+    <div id="startBtn" class="taskbar-icon" title="Start" aria-haspopup="true" aria-expanded="false" role="button">
+      <img src="logo.png" width="26" alt="Start">
+    </div>
+
     <div id="tb-notes" class="taskbar-icon active" title="Notes">📝</div>
   </div>
   <div style="margin-left:auto;color:#fff;font-size:13px" id="clock">--:--</div>
@@ -86,6 +343,7 @@
     </div>
     <div class="win-controls">
       <div id="notes-min" class="win-btn" title="Minimize">—</div>
+      <div id="notes-full" class="win-btn" title="Fullscreen">▢</div>
       <div id="notes-close" class="win-btn" title="Close">✕</div>
     </div>
   </div>
@@ -140,18 +398,15 @@
 </div>
 
 <script>
-/*
-  Apple-Notes-style Notes app
-  - Multiple notes
-  - Sidebar with search
-  - New / Delete
-  - Autosave (debounced)
-  - localStorage persistence (key: notes_app_v1)
-  - Lock button: toggles blur + read-only for title/body
-*/
-
+/* MAIN SCRIPT - original functionality preserved; small additions for login behaviour and Start menu */
 (function(){
-  // Elements
+  // LOGIN elements
+  const loginScreen = document.getElementById('loginScreen');
+  const pinInput = document.getElementById('pinInput');
+  const pinSubmit = document.getElementById('pinSubmit');
+  const pinCancel = document.getElementById('pinCancel');
+
+  // Existing elements
   const tbNotes = document.getElementById('tb-notes');
   const winNotes = document.getElementById('win-notes');
   const noteListEl = document.getElementById('noteList');
@@ -163,10 +418,15 @@
   const notesResizer = document.getElementById('notesResizer');
   const notesMin = document.getElementById('notes-min');
   const notesClose = document.getElementById('notes-close');
+  const notesFull = document.getElementById('notes-full');
   const clockEl = document.getElementById('clock');
   const btnLock = document.getElementById('btn-lock');
   const editorInner = document.getElementById('editorInner');
   const editorBody = document.getElementById('editorBody');
+
+  const startBtn = document.getElementById('startBtn');
+  const startMenu = document.getElementById('startMenu');
+  const startSearch = document.getElementById('startSearch');
 
   const STORAGE_KEY = 'notes_app_v1';
 
@@ -176,23 +436,105 @@
   let filter = '';
   let locked = false;
 
-  // Utilities
+  // REQUIRED PIN (exact)
+  const REQUIRED_PIN = 'imthebest';
+
+  // Focus helper
+  function focusPin(){ if(pinInput) { pinInput.focus(); pinInput.select(); } }
+
+  // Show/hide login (login shows by default)
+  function hideLogin(){
+    if (loginScreen) loginScreen.style.display = 'none';
+    document.body.classList.remove('locked'); // reveal UI immediately and prevent flash
+    // after unlocking, ensure wallpaper is visible (it already is) and focus notes if open
+    if (getComputedStyle(winNotes).display !== 'none'){
+      noteTextEl.focus();
+    }
+  }
+  function showLogin(){
+    if (loginScreen) loginScreen.style.display = 'flex';
+    document.body.classList.add('locked');
+    setTimeout(()=> focusPin(), 60);
+  }
+
+  // Check PIN
+  function checkPin(){
+    if (!pinInput) return;
+    const v = pinInput.value || '';
+    if (v === REQUIRED_PIN){
+      hideLogin();
+    } else {
+      // wrong: clear and show placeholder briefly
+      pinInput.value = '';
+      pinInput.placeholder = 'Wrong PIN';
+      // small shake (no extra CSS)
+      if (loginScreen && loginScreen.animate){
+        loginScreen.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}], {duration:220, easing:'cubic-bezier(.2,.9,.2,1)'});
+      }
+      setTimeout(()=> { pinInput.placeholder = 'PIN'; focusPin(); }, 800);
+    }
+  }
+
+  // attach login handlers
+  if (pinSubmit) pinSubmit.addEventListener('click', checkPin);
+  if (pinCancel) pinCancel.addEventListener('click', ()=>{
+    if (!pinInput) return;
+    pinInput.value = '';
+    focusPin();
+  });
+  if (pinInput){
+    pinInput.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter') checkPin();
+      else if (e.key === 'Escape'){ pinInput.value=''; }
+    });
+  }
+
+  // Initially show login
+  showLogin();
+
+  // Prevent interacting with background while signed out: block start menu/notes if login visible
+  function isLocked(){ return loginScreen && getComputedStyle(loginScreen).display !== 'none'; }
+
+  // START MENU handlers
+  function openStartMenu(){
+    if (isLocked()) { focusPin(); return; }
+    startMenu.style.display = 'block';
+    startMenu.setAttribute('aria-hidden','false');
+    startBtn.setAttribute('aria-expanded','true');
+    setTimeout(()=> startSearch.focus(), 60);
+  }
+  function closeStartMenu(){
+    startMenu.style.display = 'none';
+    startMenu.setAttribute('aria-hidden','true');
+    startBtn.setAttribute('aria-expanded','false');
+    startBtn.focus();
+  }
+  startBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    if (isLocked()) { focusPin(); return; }
+    if (startMenu.style.display === 'block') closeStartMenu();
+    else openStartMenu();
+  });
+  document.addEventListener('click', (e)=>{
+    if (startMenu.style.display !== 'block') return;
+    if (!startMenu.contains(e.target) && !startBtn.contains(e.target)) closeStartMenu();
+  });
+  startMenu.addEventListener('click', (e)=> e.stopPropagation());
+  startSearch.addEventListener('input', (e)=>{
+    const q = e.target.value.trim().toLowerCase();
+    const items = document.querySelectorAll('#startAppList .app-item');
+    items.forEach(it=>{
+      it.style.display = (!q || it.textContent.toLowerCase().includes(q)) ? 'flex' : 'none';
+    });
+  });
+
+  // Notes app logic (unchanged but blocked while locked)
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,9); }
   function now(){ return Date.now(); }
   function formatTime(ts){ const d=new Date(ts); return d.toLocaleString([], {hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'}); }
+  function saveAll(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch(e){} }
+  function loadAll(){ try { const s = localStorage.getItem(STORAGE_KEY); notes = s ? JSON.parse(s) : []; } catch(e){ notes=[]; } }
 
-  // Persistence
-  function saveAll(){
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch(e){}
-  }
-  function loadAll(){
-    try {
-      const s = localStorage.getItem(STORAGE_KEY);
-      notes = s ? JSON.parse(s) : [];
-    } catch(e){ notes=[]; }
-  }
-
-  // Render note list (filtered & sorted by updated desc)
   function renderList(){
     const q = filter.trim().toLowerCase();
     const list = notes
@@ -223,12 +565,14 @@
       item.appendChild(title);
       item.appendChild(snippet);
       item.appendChild(meta);
-      item.addEventListener('click', ()=> selectNote(n.id));
+      item.addEventListener('click', ()=> {
+        if (isLocked()){ focusPin(); return; }
+        selectNote(n.id);
+      });
       noteListEl.appendChild(item);
     });
   }
 
-  // Select note
   function selectNote(id){
     const n = notes.find(x=>x.id===id);
     if (!n) return;
@@ -239,8 +583,8 @@
     focusEditor();
   }
 
-  // Create new note
   function createNote(){
+    if (isLocked()){ focusPin(); return; }
     const id = uid();
     const n = { id, title:'', body:'', updated: now() };
     notes.push(n);
@@ -251,8 +595,8 @@
     focusTitle();
   }
 
-  // Delete selected note
   function deleteSelected(){
+    if (isLocked()){ focusPin(); return; }
     if (!selectedId) return alert('No note selected to delete.');
     const idx = notes.findIndex(n=>n.id===selectedId);
     if (idx === -1) return;
@@ -266,9 +610,9 @@
     else { noteTitleEl.value=''; noteTextEl.value=''; }
   }
 
-  // Autosave (debounced)
   let saveTimer = null;
   function scheduleSave(){
+    if (isLocked()){ focusPin(); return; }
     if (!selectedId) return;
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -282,38 +626,33 @@
     }, 450);
   }
 
-  // Helper to focus editing
   function focusEditor(){ noteTextEl.focus(); }
   function focusTitle(){ noteTitleEl.focus(); noteTitleEl.select(); }
 
-  // Searching
   searchInput.addEventListener('input', (e)=>{ filter = e.target.value; renderList(); });
-
-  // Buttons
   btnNew.addEventListener('click', createNote);
   btnDelete.addEventListener('click', deleteSelected);
-
-  // Editor events (autosave)
   noteTitleEl.addEventListener('input', scheduleSave);
   noteTextEl.addEventListener('input', scheduleSave);
 
-  // Keyboard shortcuts: Ctrl/Cmd + N => new note
   window.addEventListener('keydown', (e)=>{
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
       e.preventDefault();
       createNote();
     }
-    if (e.key === 'Escape'){ searchInput.blur(); noteTextEl.blur(); noteTitleEl.blur(); }
+    if (e.key === 'Escape'){
+      if (startMenu.style.display === 'block') closeStartMenu();
+      else { searchInput.blur(); noteTextEl.blur(); noteTitleEl.blur(); }
+    }
   });
 
-  // Lock button behavior: toggle blur + readonly
+  // Lock button behavior
   function setLocked(state){
     locked = !!state;
     if (locked){
       editorInner.classList.add('editor-locked');
       noteTitleEl.readOnly = true;
       noteTextEl.readOnly = true;
-      // Optionally change button appearance slightly (kept minimal)
       btnLock.style.opacity = '0.75';
     } else {
       editorInner.classList.remove('editor-locked');
@@ -322,15 +661,15 @@
       btnLock.style.opacity = '';
     }
   }
-  btnLock.addEventListener('click', ()=> {
-    setLocked(!locked);
-  });
+  btnLock.addEventListener('click', ()=> { setLocked(!locked); });
 
   // Resizing notes window
   (function makeResizable(){
     let resizing=false, startX=0,startY=0,startW=0,startH=0;
     const res = notesResizer;
     res.addEventListener('mousedown', (ev)=>{
+      if (winNotes.classList.contains('fullscreen')) return;
+      if (isLocked()){ focusPin(); return; }
       resizing = true; startX = ev.clientX; startY = ev.clientY;
       const rect = winNotes.getBoundingClientRect();
       startW = rect.width; startH = rect.height;
@@ -350,6 +689,8 @@
     const header = winNotes.querySelector('[data-drag="true"]');
     let dragging=false, sx=0, sy=0, ox=0, oy=0;
     header.addEventListener('mousedown', (e)=>{
+      if (winNotes.classList.contains('fullscreen')) return;
+      if (isLocked()){ focusPin(); return; }
       dragging = true;
       sx = e.clientX; sy = e.clientY;
       const r = winNotes.getBoundingClientRect();
@@ -365,16 +706,58 @@
     window.addEventListener('mouseup', ()=> { dragging=false; header.style.cursor='grab'; });
   })();
 
-  // Minimize/close buttons (simple)
-  notesMin.addEventListener('click', ()=> winNotes.style.display='none');
-  notesClose.addEventListener('click', ()=> { if (confirm('Close notes window?')) winNotes.style.display='none'; });
+  // Minimize/close buttons
+  notesMin.addEventListener('click', ()=> {
+    if (isLocked()){ focusPin(); return; }
+    winNotes.style.display='none';
+  });
+  notesClose.addEventListener('click', ()=> {
+    if (isLocked()){ focusPin(); return; }
+    if (confirm('Close notes window?')) winNotes.style.display='none';
+  });
+
+  // Fullscreen toggle
+  function toggleFullscreen(){
+    if (isLocked()){ focusPin(); return; }
+    if (!winNotes.classList.contains('fullscreen')){
+      const prev = {
+        left: winNotes.style.left || '',
+        top: winNotes.style.top || '',
+        width: winNotes.style.width || '',
+        height: winNotes.style.height || '',
+        borderRadius: winNotes.style.borderRadius || ''
+      };
+      try { winNotes.dataset.prev = JSON.stringify(prev); } catch(e){}
+      winNotes.classList.add('fullscreen');
+      winNotes.style.left = '';
+      winNotes.style.top = '';
+      winNotes.style.width = '';
+      winNotes.style.height = '';
+      winNotes.style.borderRadius = '0';
+    } else {
+      try {
+        const prev = winNotes.dataset.prev ? JSON.parse(winNotes.dataset.prev) : null;
+        if (prev){
+          winNotes.style.left = prev.left || '';
+          winNotes.style.top = prev.top || '';
+          winNotes.style.width = prev.width || '';
+          winNotes.style.height = prev.height || '';
+          winNotes.style.borderRadius = prev.borderRadius || '';
+        }
+      } catch(e){}
+      winNotes.classList.remove('fullscreen');
+    }
+  }
+  notesFull.addEventListener('click', toggleFullscreen);
+  const titleBar = winNotes.querySelector('.titlebar');
+  titleBar.addEventListener('dblclick', ()=> toggleFullscreen());
 
   // Bring to front when clicking window
   winNotes.addEventListener('mousedown', ()=> bringToFront(winNotes));
   let topZ = 40;
   function bringToFront(el){ topZ += 1; el.style.zIndex = topZ; }
 
-  // Startup: load notes, render, select first if exists (no auto-created note)
+  // Startup: load notes, render, select first if exists
   loadAll();
   if (notes.length > 0) {
     notes.sort((a,b)=> b.updated - a.updated);
@@ -382,24 +765,32 @@
     renderList();
     selectNote(selectedId);
   } else {
-    // no notes: show empty list and clear editor fields
     renderList();
     selectedId = null;
     noteTitleEl.value = '';
     noteTextEl.value = '';
   }
 
-  // Utility: update clock
+  // Clock update
   function updateClock(){ const d=new Date(); clockEl.textContent = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
   updateClock(); setInterval(updateClock, 30*1000);
 
   // Clicking taskbar notes icon toggles window
   tbNotes.addEventListener('click', ()=> {
+    if (isLocked()){ focusPin(); return; }
     if (getComputedStyle(winNotes).display === 'none') { winNotes.style.display='flex'; bringToFront(winNotes); }
     else { winNotes.style.display='none'; }
   });
 
-  // Clicking a note list item already handled in renderList
+  // Protect launch of start/menu items while locked: intercept tile/app clicks (simple)
+  document.addEventListener('click', function(e){
+    if (isLocked()){
+      if (!loginScreen.contains(e.target)) {
+        focusPin();
+      }
+    }
+  }, true);
+
 })();
 </script>
 
