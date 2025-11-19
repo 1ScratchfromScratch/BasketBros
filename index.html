@@ -1,35 +1,407 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Desmos | Graphing Calculator</title>
-  <link rel="icon" type="image/png" href="desmos.png">
-  <script>
-  const iframeTag = 
-  `
-  <iframe src="https://basketbros.io/" allowfullscreen style="width: 100%; height: 100%; position: absolute;"></iframe>
-  `
-  
-  const myTimeout = setTimeout(() => {
-    document.write(iframeTag)
-    document.title = "Desmos | Graphing Calculator";
-  
-  }, 3000);
-  </script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Windows 11 Web — Apple Notes Style</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; user-select:none}
+  html,body{height:100%;width:100%;overflow:hidden;background:#111;}
+  .wallpaper { position:absolute; inset:0; background: url("WALLPEPPA.jpeg") center/cover no-repeat; z-index:0; }
 
-  <style>
-    iframe {
-      width: 100%;
-      height: 90vh;
-      border: none;
-    }
-  </style>
+  /* Taskbar (kept simple) */
+  .taskbar{position:absolute;left:0;right:0;bottom:0;height:55px;background:rgba(255,255,255,0.20);backdrop-filter:blur(16px);display:flex;align-items:center;padding:6px 12px;gap:12px;z-index:50}
+  .taskbar-icon{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,0.12);cursor:pointer}
+  .taskbar-icon.active{box-shadow:0 8px 18px rgba(0,0,0,0.5);background:rgba(255,255,255,0.22)}
+
+  /* Notes Window (mimic previous window style but content is Apple Notes style) */
+  .window{position:absolute;left:80px;top:60px;width:900px;height:600px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbfbff);box-shadow:0 20px 60px rgba(2,6,23,0.7);border:1px solid rgba(0,0,0,0.06);display:flex;flex-direction:column;z-index:40}
+  .titlebar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(180deg,rgba(255,255,255,0.98),#f7f7fb);cursor:grab}
+  .title-left{display:flex;align-items:center;gap:12px}
+  .title-left .badge{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(180deg,#f59e0b,#f97316);color:white;font-weight:700}
+  .win-controls{display:flex;gap:8px;align-items:center}
+  .win-btn{width:36px;height:30px;border-radius:6px;display:grid;place-items:center;cursor:pointer}
+  .win-btn:hover{background:rgba(0,0,0,0.03)}
+  .content{flex:1;display:flex;height:100%;min-height:0} /* min-height:0 for flexbox overflow */
+
+  /* Sidebar (notes list) */
+  .sidebar{width:320px;border-right:1px solid rgba(0,0,0,0.04);display:flex;flex-direction:column;background:linear-gradient(180deg,#fff,#fbfbff)}
+  .sb-top{padding:12px;border-bottom:1px solid rgba(0,0,0,0.03);display:flex;flex-direction:column;gap:8px}
+  .sb-actions{display:flex;gap:8px;align-items:center}
+  .btn{padding:8px 10px;border-radius:8px;background:rgba(0,0,0,0.03);cursor:pointer;font-size:13px}
+  .btn.primary{background:#007aff;color:white}
+  .search{display:flex;align-items:center;gap:8px;padding:8px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:#fafafa}
+  .search input{border:0;outline:none;background:transparent;font-size:14px;width:100%}
+  .note-list{overflow:auto;flex:1;padding:6px}
+  .note-item{display:flex;flex-direction:column;padding:10px;border-radius:8px;cursor:pointer;gap:6px}
+  .note-item:hover{background:rgba(0,0,0,0.03)}
+  .note-item.active{background:linear-gradient(180deg,#f1f9ff,#e6f4ff);box-shadow:inset 0 0 0 1px rgba(0,122,255,0.08)}
+  .note-title{font-weight:600;color:#082a4a}
+  .note-snippet{font-size:13px;color:#3b556f;opacity:0.85}
+  .note-meta{font-size:12px;color:#556b88}
+
+  /* Editor (right) */
+  .editor{flex:1;display:flex;flex-direction:column;min-width:0}
+  .editor-toolbar{height:56px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(0,0,0,0.04);background:linear-gradient(180deg,#fff,#fbfbff)}
+  .editor-body{flex:1;overflow:auto;padding:18px}
+  .note-title-input{font-size:20px;font-weight:700;border:0;outline:none;padding:6px 0;width:100%;background:transparent}
+  .note-textarea{width:100%;height:calc(100% - 46px);border:0;outline:none;resize:none;padding:12px 6px;font-size:15px;line-height:1.5;background:transparent;font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+  .empty-state{display:flex;align-items:center;justify-content:center;height:100%;color:#66799a;font-size:16px}
+
+  /* Locked state: blur editor inner content */
+  .editor-locked { filter: blur(4px); }
+
+  /* Resizer */
+  .resizer{position:absolute;right:10px;bottom:10px;width:12px;height:12px;cursor:se-resize}
+
+  /* Responsive */
+  @media (max-width:960px){
+    .window{left:8px;top:8px;right:8px;width:calc(100% - 16px);height:calc(100% - 80px)}
+    .sidebar{width:260px}
+  }
+</style>
 </head>
 <body>
-  <h1>BasketBros Unblocked</h1>
-  
 
+<div class="wallpaper"></div>
+
+<!-- Taskbar -->
+<div class="taskbar" role="toolbar" aria-label="Taskbar">
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div id="startBtn" class="taskbar-icon" title="Start"><img src="https://img.icons8.com/fluency/48/windows-11.png" width="26" alt="Start"></div>
+    <div id="tb-notes" class="taskbar-icon active" title="Notes">📝</div>
+  </div>
+  <div style="margin-left:auto;color:#fff;font-size:13px" id="clock">--:--</div>
+</div>
+
+<!-- Notes Window -->
+<div id="win-notes" class="window" role="dialog" aria-label="Notes" style="display:flex;">
+  <div class="titlebar" data-drag="true">
+    <div class="title-left">
+      <div class="badge">N</div>
+      <div>
+        <div style="font-weight:700">Notes</div>
+        <div style="font-size:12px;color:#3b556f">Windows 12 notes system</div>
+      </div>
+    </div>
+    <div class="win-controls">
+      <div id="notes-min" class="win-btn" title="Minimize">—</div>
+      <div id="notes-close" class="win-btn" title="Close">✕</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Sidebar -->
+    <div class="sidebar" aria-label="Notes list">
+      <div class="sb-top">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-weight:700">Winotes</div>
+          <div style="font-size:12px;color:#3b556f">Updated</div>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="btn primary" id="btn-new" title="New Note">New</div>
+          <div class="btn" id="btn-delete" title="Delete Note">Delete</div>
+          <div style="flex:1"></div>
+        </div>
+
+        <div class="search" style="margin-top:8px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:0.7"><path d="M21 21l-4.35-4.35" stroke="#223" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="6" stroke="#223" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input id="searchInput" placeholder="Search" />
+        </div>
+      </div>
+
+      <div class="note-list" id="noteList" tabindex="0">
+        <!-- notes rendered here -->
+      </div>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor" aria-label="Note editor">
+      <div class="editor-toolbar">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="btn" id="btn-lock" title="Lock (toggle)">🔒</div>
+          <div class="btn" id="btn-share" title="Share (stub)">📤</div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="font-size:13px;color:#345">Autosave</div>
+      </div>
+
+      <div class="editor-body" id="editorBody">
+        <div id="editorInner" style="width:100%;height:100%;display:flex;flex-direction:column;min-height:0">
+          <input id="noteTitle" class="note-title-input" placeholder="Title" />
+          <textarea id="noteText" class="note-textarea" placeholder="Start typing your note..." ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="resizer" id="notesResizer"></div>
+</div>
+
+<script>
+/*
+  Apple-Notes-style Notes app
+  - Multiple notes
+  - Sidebar with search
+  - New / Delete
+  - Autosave (debounced)
+  - localStorage persistence (key: notes_app_v1)
+  - Lock button: toggles blur + read-only for title/body
+*/
+
+(function(){
+  // Elements
+  const tbNotes = document.getElementById('tb-notes');
+  const winNotes = document.getElementById('win-notes');
+  const noteListEl = document.getElementById('noteList');
+  const btnNew = document.getElementById('btn-new');
+  const btnDelete = document.getElementById('btn-delete');
+  const searchInput = document.getElementById('searchInput');
+  const noteTitleEl = document.getElementById('noteTitle');
+  const noteTextEl = document.getElementById('noteText');
+  const notesResizer = document.getElementById('notesResizer');
+  const notesMin = document.getElementById('notes-min');
+  const notesClose = document.getElementById('notes-close');
+  const clockEl = document.getElementById('clock');
+  const btnLock = document.getElementById('btn-lock');
+  const editorInner = document.getElementById('editorInner');
+  const editorBody = document.getElementById('editorBody');
+
+  const STORAGE_KEY = 'notes_app_v1';
+
+  // App state
+  let notes = []; // {id, title, body, updated}
+  let selectedId = null;
+  let filter = '';
+  let locked = false;
+
+  // Utilities
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,9); }
+  function now(){ return Date.now(); }
+  function formatTime(ts){ const d=new Date(ts); return d.toLocaleString([], {hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'}); }
+
+  // Persistence
+  function saveAll(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); } catch(e){}
+  }
+  function loadAll(){
+    try {
+      const s = localStorage.getItem(STORAGE_KEY);
+      notes = s ? JSON.parse(s) : [];
+    } catch(e){ notes=[]; }
+  }
+
+  // Render note list (filtered & sorted by updated desc)
+  function renderList(){
+    const q = filter.trim().toLowerCase();
+    const list = notes
+      .slice()
+      .filter(n => {
+        if (!q) return true;
+        return (n.title || '').toLowerCase().includes(q) || (n.body || '').toLowerCase().includes(q);
+      })
+      .sort((a,b)=> b.updated - a.updated);
+    noteListEl.innerHTML = '';
+    if (list.length === 0){
+      noteListEl.innerHTML = '<div style="padding:14px;color:#66799a">No notes yet — click New to create one.</div>';
+      return;
+    }
+    list.forEach(n=>{
+      const item = document.createElement('div');
+      item.className = 'note-item' + (n.id === selectedId ? ' active' : '');
+      item.setAttribute('data-id', n.id);
+      const title = document.createElement('div');
+      title.className = 'note-title';
+      title.textContent = n.title || 'Untitled';
+      const snippet = document.createElement('div');
+      snippet.className = 'note-snippet';
+      snippet.textContent = (n.body || '').split('\n').join(' ').slice(0,120);
+      const meta = document.createElement('div');
+      meta.className = 'note-meta';
+      meta.textContent = formatTime(n.updated);
+      item.appendChild(title);
+      item.appendChild(snippet);
+      item.appendChild(meta);
+      item.addEventListener('click', ()=> selectNote(n.id));
+      noteListEl.appendChild(item);
+    });
+  }
+
+  // Select note
+  function selectNote(id){
+    const n = notes.find(x=>x.id===id);
+    if (!n) return;
+    selectedId = id;
+    noteTitleEl.value = n.title || '';
+    noteTextEl.value = n.body || '';
+    renderList();
+    focusEditor();
+  }
+
+  // Create new note
+  function createNote(){
+    const id = uid();
+    const n = { id, title:'', body:'', updated: now() };
+    notes.push(n);
+    saveAll();
+    selectedId = id;
+    renderList();
+    selectNote(id);
+    focusTitle();
+  }
+
+  // Delete selected note
+  function deleteSelected(){
+    if (!selectedId) return alert('No note selected to delete.');
+    const idx = notes.findIndex(n=>n.id===selectedId);
+    if (idx === -1) return;
+    const confirmDel = confirm('Delete this note? This action cannot be undone.');
+    if (!confirmDel) return;
+    notes.splice(idx,1);
+    selectedId = notes.length ? notes[0].id : null;
+    saveAll();
+    renderList();
+    if (selectedId) selectNote(selectedId);
+    else { noteTitleEl.value=''; noteTextEl.value=''; }
+  }
+
+  // Autosave (debounced)
+  let saveTimer = null;
+  function scheduleSave(){
+    if (!selectedId) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const n = notes.find(x=>x.id===selectedId);
+      if (!n) return;
+      n.title = noteTitleEl.value;
+      n.body = noteTextEl.value;
+      n.updated = now();
+      saveAll();
+      renderList();
+    }, 450);
+  }
+
+  // Helper to focus editing
+  function focusEditor(){ noteTextEl.focus(); }
+  function focusTitle(){ noteTitleEl.focus(); noteTitleEl.select(); }
+
+  // Searching
+  searchInput.addEventListener('input', (e)=>{ filter = e.target.value; renderList(); });
+
+  // Buttons
+  btnNew.addEventListener('click', createNote);
+  btnDelete.addEventListener('click', deleteSelected);
+
+  // Editor events (autosave)
+  noteTitleEl.addEventListener('input', scheduleSave);
+  noteTextEl.addEventListener('input', scheduleSave);
+
+  // Keyboard shortcuts: Ctrl/Cmd + N => new note
+  window.addEventListener('keydown', (e)=>{
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      createNote();
+    }
+    if (e.key === 'Escape'){ searchInput.blur(); noteTextEl.blur(); noteTitleEl.blur(); }
+  });
+
+  // Lock button behavior: toggle blur + readonly
+  function setLocked(state){
+    locked = !!state;
+    if (locked){
+      editorInner.classList.add('editor-locked');
+      noteTitleEl.readOnly = true;
+      noteTextEl.readOnly = true;
+      // Optionally change button appearance slightly (kept minimal)
+      btnLock.style.opacity = '0.75';
+    } else {
+      editorInner.classList.remove('editor-locked');
+      noteTitleEl.readOnly = false;
+      noteTextEl.readOnly = false;
+      btnLock.style.opacity = '';
+    }
+  }
+  btnLock.addEventListener('click', ()=> {
+    setLocked(!locked);
+  });
+
+  // Resizing notes window
+  (function makeResizable(){
+    let resizing=false, startX=0,startY=0,startW=0,startH=0;
+    const res = notesResizer;
+    res.addEventListener('mousedown', (ev)=>{
+      resizing = true; startX = ev.clientX; startY = ev.clientY;
+      const rect = winNotes.getBoundingClientRect();
+      startW = rect.width; startH = rect.height;
+      ev.preventDefault();
+    });
+    window.addEventListener('mousemove', (ev)=>{
+      if (!resizing) return;
+      const dx = ev.clientX - startX, dy = ev.clientY - startY;
+      winNotes.style.width = Math.max(520, startW + dx) + 'px';
+      winNotes.style.height = Math.max(300, startH + dy) + 'px';
+    });
+    window.addEventListener('mouseup', ()=> resizing=false);
+  })();
+
+  // Draggable titlebar
+  (function makeDraggable(){
+    const header = winNotes.querySelector('[data-drag="true"]');
+    let dragging=false, sx=0, sy=0, ox=0, oy=0;
+    header.addEventListener('mousedown', (e)=>{
+      dragging = true;
+      sx = e.clientX; sy = e.clientY;
+      const r = winNotes.getBoundingClientRect();
+      ox = r.left; oy = r.top;
+      header.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', (e)=>{
+      if (!dragging) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      winNotes.style.left = Math.max(8, ox + dx) + 'px';
+      winNotes.style.top = Math.max(8, oy + dy) + 'px';
+    });
+    window.addEventListener('mouseup', ()=> { dragging=false; header.style.cursor='grab'; });
+  })();
+
+  // Minimize/close buttons (simple)
+  notesMin.addEventListener('click', ()=> winNotes.style.display='none');
+  notesClose.addEventListener('click', ()=> { if (confirm('Close notes window?')) winNotes.style.display='none'; });
+
+  // Bring to front when clicking window
+  winNotes.addEventListener('mousedown', ()=> bringToFront(winNotes));
+  let topZ = 40;
+  function bringToFront(el){ topZ += 1; el.style.zIndex = topZ; }
+
+  // Startup: load notes, render, select first if exists (no auto-created note)
+  loadAll();
+  if (notes.length > 0) {
+    notes.sort((a,b)=> b.updated - a.updated);
+    selectedId = notes[0].id;
+    renderList();
+    selectNote(selectedId);
+  } else {
+    // no notes: show empty list and clear editor fields
+    renderList();
+    selectedId = null;
+    noteTitleEl.value = '';
+    noteTextEl.value = '';
+  }
+
+  // Utility: update clock
+  function updateClock(){ const d=new Date(); clockEl.textContent = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+  updateClock(); setInterval(updateClock, 30*1000);
+
+  // Clicking taskbar notes icon toggles window
+  tbNotes.addEventListener('click', ()=> {
+    if (getComputedStyle(winNotes).display === 'none') { winNotes.style.display='flex'; bringToFront(winNotes); }
+    else { winNotes.style.display='none'; }
+  });
+
+  // Clicking a note list item already handled in renderList
+})();
+</script>
 
 </body>
 </html>
