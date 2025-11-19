@@ -11,9 +11,70 @@
   body.locked { overflow: hidden; }
   body.locked .window,
   body.locked .taskbar,
-  body.locked .start-menu { visibility: hidden; }
+  body.locked .start-menu,
+  body.locked .desktop { visibility: hidden; }
 
   .wallpaper { position:absolute; inset:0; background: url("WALLPEPPA.jpeg") center/cover no-repeat; z-index:0; }
+
+  /* DESKTOP (UPDATED: absolute-positioned draggable icons with grid snapping) */
+  .desktop{
+    position:absolute; inset:0; z-index:10; pointer-events:auto;
+    display:block;
+    padding:32px;
+  }
+
+  /* We'll place icons absolutely inside .desktop-inner which fills the desktop */
+  .desktop-inner {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Desktop icon visual (kept same) */
+  .icon {
+    position: absolute; /* now absolute */
+    width:96px; height:110px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:8px; cursor:grab;
+    user-select:none; color:#e9f0ff;
+    touch-action: none;
+    transition: box-shadow 140ms, transform 120ms;
+  }
+  .icon .ico {
+    width:64px; height:64px; border-radius:12px; display:grid; place-items:center; background:rgba(255,255,255,0.06);
+    font-size:28px;
+  }
+  .icon .label {
+    font-size:13px; text-align:center; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.45); max-width:86px; white-space:normal; word-wrap:break-word;
+  }
+  .icon.selected .ico { outline:2px solid rgba(255,255,255,0.18); box-shadow:0 6px 20px rgba(0,0,0,0.45); }
+  .icon.selected .label { background:rgba(0,0,0,0.45); padding:2px 6px; border-radius:6px; color:#fff; font-weight:600; }
+
+  /* dragging state */
+  .icon.dragging { opacity:0.9; transform:scale(1.02); cursor:grabbing; z-index:1200; box-shadow:0 30px 80px rgba(2,6,23,0.6); }
+
+  /* CONTEXT MENU */
+  .ctx-menu {
+    position: fixed;
+    min-width: 160px;
+    background: #fff;
+    color: #0b253a;
+    border-radius:8px;
+    box-shadow: 0 12px 40px rgba(2,6,23,0.45);
+    border: 1px solid rgba(0,0,0,0.06);
+    z-index: 1200;
+    display: none;
+    padding:6px 6px;
+    font-size:14px;
+  }
+  .ctx-menu button {
+    display:block;
+    width:100%;
+    text-align:left;
+    padding:8px 10px;
+    border:0;
+    background:transparent;
+    cursor:pointer;
+    border-radius:6px;
+  }
+  .ctx-menu button:hover { background: rgba(0,0,0,0.04); }
 
   /* LOGIN SCREEN (ADDED) */
   #loginScreen {
@@ -63,10 +124,12 @@
 
   /* Taskbar (kept simple) */
   .taskbar{position:absolute;left:0;right:0;bottom:0;height:55px;background:rgba(255,255,255,0.20);backdrop-filter:blur(16px);display:flex;align-items:center;padding:6px 12px;gap:12px;z-index:50}
+  .taskbar-left{display:flex;gap:8px;align-items:center}
   .taskbar-icon{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,0.12);cursor:pointer}
   .taskbar-icon.active{box-shadow:0 8px 18px rgba(0,0,0,0.5);background:rgba(255,255,255,0.22)}
+  .taskbar-pin { width:40px;height:40px;border-radius:8px;display:grid;place-items:center;background:rgba(0,0,0,0.05);cursor:pointer;margin-left:6px; }
 
-  /* Notes Window (mimic previous window style but content is Apple Notes style) */
+  /* Notes Window (unchanged) */
   .window{position:absolute;left:80px;top:60px;width:900px;height:600px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbfbff);box-shadow:0 20px 60px rgba(2,6,23,0.7);border:1px solid rgba(0,0,0,0.06);display:flex;flex-direction:column;z-index:40}
   .titlebar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(180deg,rgba(255,255,255,0.98),#f7f7fb);cursor:grab}
   .title-left{display:flex;align-items:center;gap:12px}
@@ -190,6 +253,12 @@
 <!-- NOTE: body starts locked to prevent any UI flash; JS will remove 'locked' after successful login -->
 <body class="locked">
 
+<!-- Context menu -->
+<div id="ctxMenu" class="ctx-menu" role="menu" aria-hidden="true">
+  <button id="ctxOpen">Open</button>
+  <button id="ctxPin">Pin to taskbar</button>
+</div>
+
 <!-- LOGIN SCREEN (ADDED) -->
 <div id="loginScreen" role="dialog" aria-modal="true" aria-label="Sign in">
   <div id="loginCard" role="document" aria-labelledby="loginName">
@@ -212,7 +281,14 @@
   </div>
 </div>
 
-<div class="wallpaper"></div>
+<div class="wallpaper" aria-hidden="true"></div>
+
+<!-- DESKTOP ICONS (UPDATED: absolute, draggable, grid-snapping) -->
+<div class="desktop" role="application" aria-label="Desktop icons">
+  <div class="desktop-inner" id="desktopInner" tabindex="0">
+    <!-- icons will be created & absolutely positioned by JS -->
+  </div>
+</div>
 
 <!-- Start menu (unchanged earlier) -->
 <div id="startMenu" class="start-menu" role="menu" aria-hidden="true" aria-label="Start menu">
@@ -319,13 +395,12 @@
 
 <!-- Taskbar -->
 <div class="taskbar" role="toolbar" aria-label="Taskbar">
-  <div style="display:flex;gap:8px;align-items:center;">
-    
-    <!-- ⭐ ONLY CHANGE ALREADY MADE EARLIER — YOUR LOGO HERE -->
+  <div class="taskbar-left">
     <div id="startBtn" class="taskbar-icon" title="Start" aria-haspopup="true" aria-expanded="false" role="button">
       <img src="logo.png" width="26" alt="Start">
     </div>
-
+    <!-- pinned icons container -->
+    <div id="taskbarPins" style="display:flex;gap:8px;align-items:center;"></div>
     <div id="tb-notes" class="taskbar-icon active" title="Notes">📝</div>
   </div>
   <div style="margin-left:auto;color:#fff;font-size:13px" id="clock">--:--</div>
@@ -398,13 +473,26 @@
 </div>
 
 <script>
-/* MAIN SCRIPT - original functionality preserved; small additions for login behaviour and Start menu */
+/* MAIN SCRIPT - updated desktop dragging to allow free placement with grid snapping.
+   All other behavior preserved.
+*/
 (function(){
   // LOGIN elements
   const loginScreen = document.getElementById('loginScreen');
   const pinInput = document.getElementById('pinInput');
   const pinSubmit = document.getElementById('pinSubmit');
   const pinCancel = document.getElementById('pinCancel');
+
+  // Desktop elements
+  const desktopInner = document.getElementById('desktopInner');
+
+  // Context menu elements
+  const ctxMenu = document.getElementById('ctxMenu');
+  const ctxOpen = document.getElementById('ctxOpen');
+  const ctxPin = document.getElementById('ctxPin');
+
+  // Taskbar pins container
+  const taskbarPinsEl = document.getElementById('taskbarPins');
 
   // Existing elements
   const tbNotes = document.getElementById('tb-notes');
@@ -429,6 +517,8 @@
   const startSearch = document.getElementById('startSearch');
 
   const STORAGE_KEY = 'notes_app_v1';
+  const DESKTOP_POS_KEY = 'desktop_positions_v1';
+  const PINNED_KEY = 'pinned_apps_v1';
 
   // App state
   let notes = []; // {id, title, body, updated}
@@ -436,8 +526,282 @@
   let filter = '';
   let locked = false;
 
+  // Desktop icon list (you can add more)
+  const defaultDesktopItems = [
+    { id: 'notes', title: 'Notes', icon: '📝', action: 'open-notes' },
+    { id: 'recycle', title: 'Recycle Bin', icon: '🗑️', action: 'noop' }
+  ];
+
+  // position map loaded/saved
+  let desktopPositions = {}; // { id: {x, y} }
+  let desktopItems = JSON.parse(JSON.stringify(defaultDesktopItems)); // items array
+  let pinnedApps = [];
+
+  // Grid config (matches icon size)
+  const CELL_W = 96;
+  const CELL_H = 110;
+  const PADDING = 32;
+  const GAP_X = 18;
+  const GAP_Y = 0; // vertical gap previously implicit; we keep cell height large enough
+
+  // load pinned & positions from storage
+  function loadPersisted(){
+    try {
+      const pos = JSON.parse(localStorage.getItem(DESKTOP_POS_KEY) || 'null');
+      if (pos && typeof pos === 'object') desktopPositions = pos;
+    } catch(e){ desktopPositions = {}; }
+    try { pinnedApps = JSON.parse(localStorage.getItem(PINNED_KEY) || 'null') || []; } catch(e){ pinnedApps = []; }
+  }
+
+  loadPersisted();
+
   // REQUIRED PIN (exact)
   const REQUIRED_PIN = 'imthebest';
+
+  // Utility: compute grid columns count
+  function computeGridCols(){
+    const rect = desktopInner.getBoundingClientRect();
+    const availableWidth = Math.max(0, rect.width - (PADDING * 2));
+    const colWidth = CELL_W + GAP_X;
+    const cols = Math.max(1, Math.floor((availableWidth + GAP_X) / colWidth));
+    return cols;
+  }
+
+  // Utility: convert index -> x,y within grid (for initial auto-layout)
+  function gridPositionForIndex(i){
+    const cols = computeGridCols();
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = PADDING + col * (CELL_W + GAP_X);
+    const y = PADDING + row * (CELL_H + GAP_Y);
+    return { x, y };
+  }
+
+  // Snap arbitrary x,y to nearest grid cell (clamped within desktop)
+  function snapToGrid(x, y){
+    const rect = desktopInner.getBoundingClientRect();
+    const cols = computeGridCols();
+    const colWidth = CELL_W + GAP_X;
+    const rowHeight = CELL_H + GAP_Y;
+    // relative to desktop padding origin
+    let rx = x - rect.left - PADDING;
+    let ry = y - rect.top - PADDING;
+    // compute nearest cell
+    let col = Math.round(rx / colWidth);
+    let row = Math.round(ry / rowHeight);
+    // clamp
+    col = Math.max(0, Math.min(cols - 1, col));
+    const maxRows = Math.max(1, Math.floor((rect.height - PADDING*2 + GAP_Y) / rowHeight));
+    row = Math.max(0, Math.min(maxRows - 1, row));
+    const nx = PADDING + col * colWidth;
+    const ny = PADDING + row * rowHeight;
+    return { x: nx, y: ny };
+  }
+
+  // Render desktop icons as absolutely positioned elements
+  function renderDesktop(){
+    if (!desktopInner) return;
+    desktopInner.innerHTML = '';
+    desktopItems.forEach((it, idx) => {
+      const node = document.createElement('div');
+      node.className = 'icon';
+      node.setAttribute('data-id', it.id);
+      node.setAttribute('tabindex', '0');
+      node.innerHTML = `<div class="ico" aria-hidden="true">${it.icon}</div><div class="label">${it.title}</div>`;
+      // compute position: use saved position if available, else auto grid position
+      const pos = desktopPositions[it.id] || gridPositionForIndex(idx);
+      node.style.left = (pos.x) + 'px';
+      node.style.top = (pos.y) + 'px';
+      desktopInner.appendChild(node);
+
+      // selection & double-click to open
+      let clickTimer = null;
+      node.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        clearSelections();
+        node.classList.add('selected');
+        if (clickTimer){
+          clearTimeout(clickTimer); clickTimer = null;
+          handleDesktopAction(it);
+        } else {
+          clickTimer = setTimeout(()=> { clearTimeout(clickTimer); clickTimer = null; }, 300);
+        }
+      });
+
+      // keyboard open
+      node.addEventListener('keydown', (e)=>{
+        if (e.key === 'Enter') handleDesktopAction(it);
+      });
+
+      // right-click context menu
+      node.addEventListener('contextmenu', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenuFor(it, e.clientX, e.clientY);
+      });
+
+      // pointer-based dragging (works for mouse & touch)
+      let dragging = false;
+      let startX = 0, startY = 0;
+      let origLeft = 0, origTop = 0;
+
+      function pointerDown(ev){
+        if (isLocked()) { focusPin(); return; }
+        ev.preventDefault();
+        dragging = true;
+        node.classList.add('dragging');
+        // unify touch and mouse
+        const p = ev.touches ? ev.touches[0] : ev;
+        startX = p.clientX; startY = p.clientY;
+        const r = node.getBoundingClientRect();
+        // compute offsets relative to desktopInner's left/top
+        origLeft = r.left - desktopInner.getBoundingClientRect().left;
+        origTop = r.top - desktopInner.getBoundingClientRect().top;
+        // raise z
+        node.style.zIndex = 2000;
+        // add move/up listeners on window
+        window.addEventListener('pointermove', pointerMove);
+        window.addEventListener('pointerup', pointerUp, { once: true });
+        // also handle touchmove/touchend for broader compatibility
+        window.addEventListener('touchmove', pointerMove, { passive: false });
+        window.addEventListener('touchend', pointerUp, { once: true });
+      }
+      function pointerMove(ev){
+        if (!dragging) return;
+        ev.preventDefault();
+        const p = ev.touches ? ev.touches[0] : ev;
+        const dx = p.clientX - startX;
+        const dy = p.clientY - startY;
+        const nx = origLeft + dx;
+        const ny = origTop + dy;
+        // set immediate free position (no snapping while dragging)
+        node.style.left = Math.max(0, nx) + 'px';
+        node.style.top = Math.max(0, ny) + 'px';
+      }
+      function pointerUp(ev){
+        if (!dragging) return;
+        dragging = false;
+        node.classList.remove('dragging');
+        // compute absolute screen coords for snapping
+        const r = node.getBoundingClientRect();
+        const snapped = snapToGrid(r.left, r.top);
+        // apply snapped position relative to desktopInner
+        node.style.left = (snapped.x) + 'px';
+        node.style.top = (snapped.y) + 'px';
+        node.style.zIndex = '';
+        // save position
+        desktopPositions[it.id] = { x: snapped.x, y: snapped.y };
+        persistDesktopPositions();
+        // cleanup listeners (some may be removed via once)
+        window.removeEventListener('pointermove', pointerMove);
+        window.removeEventListener('pointerup', pointerUp);
+        window.removeEventListener('touchmove', pointerMove);
+        window.removeEventListener('touchend', pointerUp);
+      }
+
+      // pointerdown (mouse & touch)
+      node.addEventListener('pointerdown', pointerDown);
+      node.addEventListener('touchstart', pointerDown, { passive: false });
+    });
+  }
+
+  function clearSelections(){
+    document.querySelectorAll('.desktop .icon.selected').forEach(n=>n.classList.remove('selected'));
+  }
+  document.addEventListener('click', (e)=> {
+    if (!e.target.closest('.desktop .icon')) clearSelections();
+  });
+
+  // open action
+  function handleDesktopAction(item){
+    if (item.action === 'open-notes'){
+      winNotes.style.display = 'flex';
+      bringToFront(winNotes);
+    } else {
+      // noop
+    }
+  }
+
+  // Context menu wiring
+  let ctxTargetItem = null;
+  function showContextMenuFor(item, x, y){
+    ctxTargetItem = item;
+    const isPinned = pinnedApps.includes(item.id);
+    ctxPin.textContent = isPinned ? 'Unpin from taskbar' : 'Pin to taskbar';
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    ctxMenu.style.display = 'block';
+    ctxMenu.setAttribute('aria-hidden','false');
+    requestAnimationFrame(()=> {
+      const r = ctxMenu.getBoundingClientRect();
+      if (r.right > window.innerWidth) ctxMenu.style.left = (window.innerWidth - r.width - 12) + 'px';
+      if (r.bottom > window.innerHeight) ctxMenu.style.top = (window.innerHeight - r.height - 12) + 'px';
+    });
+  }
+  function hideContextMenu(){
+    ctxMenu.style.display = 'none';
+    ctxMenu.setAttribute('aria-hidden','true');
+    ctxTargetItem = null;
+  }
+  ctxOpen.addEventListener('click', ()=>{
+    if (ctxTargetItem) handleDesktopAction(ctxTargetItem);
+    hideContextMenu();
+  });
+  ctxPin.addEventListener('click', ()=>{
+    if (!ctxTargetItem) return hideContextMenu();
+    togglePin(ctxTargetItem.id);
+    hideContextMenu();
+  });
+  document.addEventListener('click', (e)=>{
+    if (!ctxMenu.contains(e.target)) hideContextMenu();
+  });
+  window.addEventListener('keydown', (e)=>{
+    if (e.key === 'Escape') hideContextMenu();
+  });
+
+  // Pin/unpin logic
+  function togglePin(id){
+    const idx = pinnedApps.indexOf(id);
+    if (idx === -1){
+      pinnedApps.push(id);
+    } else {
+      pinnedApps.splice(idx,1);
+    }
+    persistPinned();
+    renderTaskbarPins();
+  }
+  function persistPinned(){
+    try { localStorage.setItem(PINNED_KEY, JSON.stringify(pinnedApps)); } catch(e){}
+  }
+  function renderTaskbarPins(){
+    taskbarPinsEl.innerHTML = '';
+    pinnedApps.forEach(id=>{
+      const item = desktopItems.find(x=>x.id===id) || defaultDesktopItems.find(x=>x.id===id);
+      if (!item) return;
+      const el = document.createElement('div');
+      el.className = 'taskbar-pin';
+      el.setAttribute('title', item.title);
+      el.setAttribute('data-id', item.id);
+      el.innerHTML = `<div style="width:28px;height:28;display:grid;place-items:center">${item.icon}</div>`;
+      el.addEventListener('click', ()=> {
+        if (item.action === 'open-notes') {
+          winNotes.style.display = 'flex';
+          bringToFront(winNotes);
+        }
+      });
+      el.addEventListener('contextmenu', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        showContextMenuFor(item, e.clientX, e.clientY);
+      });
+      taskbarPinsEl.appendChild(el);
+    });
+  }
+
+  // persist positions
+  function persistDesktopPositions(){
+    try { localStorage.setItem(DESKTOP_POS_KEY, JSON.stringify(desktopPositions)); } catch(e){}
+  }
 
   // Focus helper
   function focusPin(){ if(pinInput) { pinInput.focus(); pinInput.select(); } }
@@ -464,10 +828,8 @@
     if (v === REQUIRED_PIN){
       hideLogin();
     } else {
-      // wrong: clear and show placeholder briefly
       pinInput.value = '';
       pinInput.placeholder = 'Wrong PIN';
-      // small shake (no extra CSS)
       if (loginScreen && loginScreen.animate){
         loginScreen.animate([{transform:'translateY(0)'},{transform:'translateY(-6px)'},{transform:'translateY(0)'}], {duration:220, easing:'cubic-bezier(.2,.9,.2,1)'});
       }
@@ -492,7 +854,7 @@
   // Initially show login
   showLogin();
 
-  // Prevent interacting with background while signed out: block start menu/notes if login visible
+  // Prevent interacting with background while signed out
   function isLocked(){ return loginScreen && getComputedStyle(loginScreen).display !== 'none'; }
 
   // START MENU handlers
@@ -528,7 +890,7 @@
     });
   });
 
-  // Notes app logic (unchanged but blocked while locked)
+  // Notes app logic (unchanged)
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,9); }
   function now(){ return Date.now(); }
   function formatTime(ts){ const d=new Date(ts); return d.toLocaleString([], {hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'}); }
@@ -771,6 +1133,18 @@
     noteTextEl.value = '';
   }
 
+  // Load persisted desktop items & positions & pins, then render
+  (function initDesktopState(){
+    // keep items order same as default (no reordering since free placement)
+    desktopItems = JSON.parse(JSON.stringify(defaultDesktopItems));
+    // Ensure any existing desktopPositions keys that reference non-existent items are ignored
+    const saved = JSON.parse(localStorage.getItem(DESKTOP_POS_KEY) || 'null') || {};
+    desktopPositions = saved;
+    pinnedApps = JSON.parse(localStorage.getItem(PINNED_KEY) || 'null') || pinnedApps || [];
+    renderDesktop();
+    renderTaskbarPins();
+  })();
+
   // Clock update
   function updateClock(){ const d=new Date(); clockEl.textContent = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
   updateClock(); setInterval(updateClock, 30*1000);
@@ -791,8 +1165,45 @@
     }
   }, true);
 
+  // accessibility: keyboard support for desktopInner
+  desktopInner.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter'){
+      const focused = document.activeElement;
+      if (focused && focused.classList.contains('icon')){
+        const id = focused.getAttribute('data-id');
+        const item = desktopItems.find(x=>x.id===id);
+        if (item) handleDesktopAction(item);
+      }
+    }
+  });
+
+  // Keep desktop responsive: when window resizes, re-snap any icons that are out-of-bounds
+  window.addEventListener('resize', ()=> {
+    // ensure icons still within grid; if saved positions exist, clamp them
+    const rect = desktopInner.getBoundingClientRect();
+    const cols = computeGridCols();
+    const maxRows = Math.max(1, Math.floor((rect.height - PADDING*2 + GAP_Y) / (CELL_H + GAP_Y)));
+    Object.keys(desktopPositions).forEach(id => {
+      let pos = desktopPositions[id];
+      if (!pos) return;
+      // compute nearest col/row for current pos
+      let relX = pos.x - PADDING;
+      let relY = pos.y - PADDING;
+      const colWidth = CELL_W + GAP_X;
+      const rowHeight = CELL_H + GAP_Y;
+      let col = Math.round(relX / colWidth);
+      let row = Math.round(relY / rowHeight);
+      col = Math.max(0, Math.min(cols - 1, col));
+      row = Math.max(0, Math.min(maxRows - 1, row));
+      desktopPositions[id] = { x: PADDING + col * colWidth, y: PADDING + row * rowHeight };
+    });
+    persistDesktopPositions();
+    renderDesktop();
+  });
+
 })();
 </script>
 
 </body>
 </html>
+
