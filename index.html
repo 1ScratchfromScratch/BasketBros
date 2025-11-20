@@ -129,7 +129,7 @@
   .taskbar-icon.active{box-shadow:0 8px 18px rgba(0,0,0,0.5);background:rgba(255,255,255,0.22)}
   .taskbar-pin { width:40px;height:40px;border-radius:8px;display:grid;place-items:center;background:rgba(0,0,0,0.05);cursor:pointer;margin-left:6px; }
 
-  /* Notes Window (unchanged) */
+  /* Notes Window (unchanged) - now starts hidden with display:none */
   .window{position:absolute;left:80px;top:60px;width:900px;height:600px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.98),#fbfbff);box-shadow:0 20px 60px rgba(2,6,23,0.7);border:1px solid rgba(0,0,0,0.06);display:flex;flex-direction:column;z-index:40}
   .titlebar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(180deg,rgba(255,255,255,0.98),#f7f7fb);cursor:grab}
   .title-left{display:flex;align-items:center;gap:12px}
@@ -410,7 +410,7 @@
 </div>
 
 <!-- Notes Window -->
-<div id="win-notes" class="window" role="dialog" aria-label="Notes" style="display:flex;">
+<div id="win-notes" class="window" role="dialog" aria-label="Notes" style="display:none;"> <!-- changed from display:flex; to display:none; -->
   <div class="titlebar" data-drag="true">
     <div class="title-left">
       <div class="badge">N</div>
@@ -711,7 +711,7 @@
           const id2 = swapTarget.getAttribute('data-id');
 
           const pos1 = desktopPositions[id1] || gridPositionForIndex(desktopItems.findIndex(i => i.id === id1));
-          const pos2 = desktopPositions[id2] || gridPositionForIndex(desktopItems.findIndex(i => i.id === id2));
+          const pos2 = desktopPositions[id2] || gridPositionForIndex(desktopItems.findIndex(i => i.id === i2));
 
           desktopPositions[id1] = pos2;
           desktopPositions[id2] = pos1;
