@@ -685,17 +685,57 @@
         if (!dragging) return;
         dragging = false;
         node.classList.remove('dragging');
-        // compute absolute screen coords for snapping
+        // Compute absolute position
         const r = node.getBoundingClientRect();
-        const snapped = snapToGrid(r.left, r.top);
-        // apply snapped position relative to desktopInner
-        node.style.left = (snapped.x) + 'px';
-        node.style.top = (snapped.y) + 'px';
+        const rect = desktopInner.getBoundingClientRect();
+
+        // Check if over another icon for swap
+        const icons = Array.from(document.querySelectorAll('.desktop .icon')).filter(n => n !== node);
+        let swapTarget = null;
+        for (const icon of icons) {
+          const rect2 = icon.getBoundingClientRect();
+          if (
+            r.left < rect2.right &&
+            r.right > rect2.left &&
+            r.top < rect2.bottom &&
+            r.bottom > rect2.top
+          ) {
+            swapTarget = icon;
+            break;
+          }
+        }
+
+        if (swapTarget) {
+          // Swap positions in desktopPositions
+          const id1 = node.getAttribute('data-id');
+          const id2 = swapTarget.getAttribute('data-id');
+
+          const pos1 = desktopPositions[id1] || gridPositionForIndex(desktopItems.findIndex(i => i.id === id1));
+          const pos2 = desktopPositions[id2] || gridPositionForIndex(desktopItems.findIndex(i => i.id === id2));
+
+          desktopPositions[id1] = pos2;
+          desktopPositions[id2] = pos1;
+
+          // Re-render icons to reflect swapped positions
+          renderDesktop();
+
+          // Save positions
+          persistDesktopPositions();
+        } else {
+          // No swap, snap to grid
+          const snapped = snapToGrid(r.left, r.top);
+          node.style.left = (snapped.x) + 'px';
+          node.style.top = (snapped.y) + 'px';
+
+          // Save position
+          const id = node.getAttribute('data-id');
+          desktopPositions[id] = { x: snapped.x, y: snapped.y };
+          persistDesktopPositions();
+        }
+
+        // Reset z-index
         node.style.zIndex = '';
-        // save position
-        desktopPositions[it.id] = { x: snapped.x, y: snapped.y };
-        persistDesktopPositions();
-        // cleanup listeners (some may be removed via once)
+        // cleanup event listeners
         window.removeEventListener('pointermove', pointerMove);
         window.removeEventListener('pointerup', pointerUp);
         window.removeEventListener('touchmove', pointerMove);
