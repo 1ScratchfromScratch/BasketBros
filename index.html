@@ -68,7 +68,7 @@
   .window.fullscreen{left:0 !important;top:0 !important;width:100vw !important;height:calc(100vh - 55px) !important;border-radius:0 !important;overflow:hidden !important}
   .window.fullscreen .resizer{display:none !important}
   .start-menu{position:absolute;bottom:62px;left:12px;width:880px;height:520px;background:linear-gradient(180deg,#ffffffee,#f5f7fb);border-radius:12px;box-shadow:0 30px 80px rgba(2,6,23,.6);border:1px solid rgba(0,0,0,.06);display:none;z-index:200;overflow:hidden;color:#0b253a;backdrop-filter:blur(6px)}
-  .start-inner{display:flex;height:100%}
+  .start-inner{Display:flex;height:100%}
   .start-left{width:260px;border-right:1px solid rgba(0,0,0,.04);background:linear-gradient(180deg,#f7fafc,#fff);padding:16px;display:flex;flex-direction:column;gap:12px}
   .start-search{display:flex;align-items:center;gap:8px;background:#fff;border-radius:8px;padding:8px;border:1px solid rgba(0,0,0,.04)}
   .start-search input{border:0;outline:none;width:100%;font-size:14px;background:transparent}
@@ -88,7 +88,21 @@
   .tile.netflix{background:linear-gradient(180deg,#111827,#ef4444)}
   .tile.store{background:linear-gradient(180deg,#0ea5a5,#1fb5b5);color:#042f2f}
   .tile.spotify{background:linear-gradient(180deg,#1db954,#1db954)}
+  .tile.store{background:linear-gradient(180deg,#0ea5a5,#1fb5b5);color:#042f2f}
+  .tile.spotify{background:linear-gradient(180deg,#1db954,#1db954)}
   .start-footer{display:flex;justify-content:space-between;font-size:12px;color:#4b657a;padding-top:6px}
+  /* Settings-specific */
+  .settings-sidebar{width:260px;border-right:1px solid rgba(0,0,0,.04);background:linear-gradient(180deg,#fff,#fbfbff);padding:12px;display:flex;flex-direction:column;gap:8px}
+  .settings-content{flex:1;padding:16px;overflow:auto}
+  .preset-grid{display:flex;gap:10px;flex-wrap:wrap}
+  .preset-thumb{width:120px;height:80px;border-radius:8px;background:#eee;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);cursor:pointer;display:grid;place-items:center;font-size:12px;color:#fff}
+  .preview-box{width:100%;height:160px;border-radius:8px;border:1px solid rgba(0,0,0,.06);background-size:cover;background-position:center;overflow:hidden;margin-bottom:10px}
+
+  /* IMAGE ICON STYLES (for inserted settings image) */
+  .icon .ico img{width:36px;height:36px;object-fit:contain;border-radius:8px;display:block}
+  .t-icon img{width:22px;height:22px;object-fit:contain;display:block;border-radius:6px}
+  .badge img{width:20px;height:20px;object-fit:contain;display:block;border-radius:6px}
+
   @media (max-width:1000px){.start-menu{left:8px;right:8px;width:auto}.tiles-grid{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:960px){.window{left:8px;top:8px;right:8px;width:calc(100% - 16px);height:calc(100% - 80px)}.sidebar{width:260px}}
 </style>
@@ -143,7 +157,13 @@
         <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#e6f3ff,#cfe6ff);display:inline-grid;place-items:center">🔍</span> Cortana</div>
         <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#fbe6ff,#f3c8ff);display:inline-grid;place-items:center">✉️</span> Mail</div>
         <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#e6f7ff,#cfefff);display:inline-grid;place-items:center">🎧</span> Groove Music</div>
-        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#ffdbe6,#ffbfd6);display:inline-grid;place-items:center">⚙️</span> Settings</div>
+        <!-- Settings app item: use settings.png -->
+        <div class="app-item">
+          <span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#ffdbe6,#ffbfd6);display:inline-grid;place-items:center">
+            <img src="settings.png" alt="Settings" style="width:20px;height:20px;object-fit:contain;border-radius:4px;display:block">
+          </span>
+          Settings
+        </div>
       </div>
       <div style="padding-top:8px;"><div class="app-item" style="font-size:13px;color:#556b88;justify-content:flex-start">Power</div></div>
     </div>
@@ -167,6 +187,14 @@
         <div class="tile store" role="gridcell" title="Microsoft Store"><div class="t-icon">🏬</div><div>Microsoft Store</div></div>
         <div class="tile spotify" role="gridcell" title="Spotify"><div class="t-icon">♪</div><div>Spotify</div></div>
         <div class="tile netflix" role="gridcell" title="Disney+"><div class="t-icon">★</div><div>Disney+</div></div>
+
+        <!-- Settings tile: use settings.png -->
+        <div class="tile" role="gridcell" title="Settings" id="tile-settings" style="background:linear-gradient(180deg,#8b5cf6,#6b21a8)">
+          <div class="t-icon">
+            <img src="settings.png" alt="Settings" />
+          </div>
+          <div>Settings</div>
+        </div>
       </div>
 
       <div class="start-footer"><div>All apps</div><div>Quick access</div></div>
@@ -213,8 +241,63 @@
   <div class="resizer" id="notesResizer"></div>
 </div>
 
+<!-- Settings window -->
+<div id="win-settings" class="window" role="dialog" aria-label="Settings" style="display:none">
+  <div class="titlebar" data-drag="true">
+    <!-- badge replaced with image -->
+    <div class="title-left">
+      <div class="badge">
+        <img src="settings.png" alt="Settings">
+      </div>
+      <div>
+        <div style="font-weight:700">Settings</div>
+        <div style="font-size:12px;color:#3b556f">System & personalization</div>
+      </div>
+    </div>
+    <div class="win-controls"><div id="settings-min" class="win-btn" title="Minimize">—</div><div id="settings-full" class="win-btn" title="Fullscreen">▢</div><div id="settings-close" class="win-btn" title="Close">✕</div></div>
+  </div>
+
+  <div class="content">
+    <div class="settings-sidebar" role="navigation" aria-label="Settings categories">
+      <div style="font-weight:700">Settings</div>
+      <div class="btn" id="settings-category-personal">Personalization</div>
+      <div class="btn" id="settings-category-wall">Wallpaper</div>
+      <div style="flex:1"></div>
+      <div style="font-size:12px;color:#556b88">Settings are saved locally</div>
+    </div>
+
+    <div class="settings-content" id="settingsContent" aria-live="polite">
+      <div style="font-weight:700;font-size:16px">Personalization</div>
+      <div style="margin-top:12px" id="settingsMain">
+        <div style="font-weight:600;margin-bottom:8px">Wallpaper</div>
+        <div class="preview-box" id="wallPreview" aria-hidden="true"></div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <label class="btn" for="wallFile" title="Upload an image" style="cursor:pointer">Upload image</label>
+          <input id="wallFile" type="file" accept="image/*" style="display:none" />
+          <input id="wallUrl" placeholder="Or paste an image URL here" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,.06)" />
+          <button id="applyUrl" class="btn primary">Apply</button>
+        </div>
+
+        <div style="margin-bottom:10px">Presets</div>
+        <div class="preset-grid" id="presetGrid">
+          <!-- thumbnails will be filled by JS -->
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="resetWallpaper" class="btn">Reset to default</button>
+          <div style="flex:1"></div>
+          <button id="saveWallpaper" class="btn primary">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
 (function(){
+  /* existing references */
   const loginScreen=document.getElementById('loginScreen'),pinInput=document.getElementById('pinInput'),pinSubmit=document.getElementById('pinSubmit'),pinCancel=document.getElementById('pinCancel');
   const desktopInner=document.getElementById('desktopInner'),ctxMenu=document.getElementById('ctxMenu'),ctxOpen=document.getElementById('ctxOpen'),ctxPin=document.getElementById('ctxPin');
   const taskbarPinsEl=document.getElementById('taskbarPins'),tbNotes=document.getElementById('tb-notes'),winNotes=document.getElementById('win-notes');
@@ -223,18 +306,40 @@
   const notesMin=document.getElementById('notes-min'),notesClose=document.getElementById('notes-close'),notesFull=document.getElementById('notes-full'),clockEl=document.getElementById('clock');
   const btnLock=document.getElementById('btn-lock'),editorInner=document.getElementById('editorInner'),editorBody=document.getElementById('editorBody');
   const startBtn=document.getElementById('startBtn'),startMenu=document.getElementById('startMenu'),startSearch=document.getElementById('startSearch');
+  const startAppList=document.getElementById('startAppList'),tileSettings=document.getElementById('tile-settings');
+
+  /* settings elements */
+  const winSettings = document.getElementById('win-settings');
+  const settingsMin = document.getElementById('settings-min');
+  const settingsFull = document.getElementById('settings-full');
+  const settingsClose = document.getElementById('settings-close');
+  const wallFile = document.getElementById('wallFile');
+  const wallUrl = document.getElementById('wallUrl');
+  const applyUrl = document.getElementById('applyUrl');
+  const wallPreview = document.getElementById('wallPreview');
+  const presetGrid = document.getElementById('presetGrid');
+  const resetWallpaper = document.getElementById('resetWallpaper');
+  const saveWallpaperBtn = document.getElementById('saveWallpaper');
 
   const STORAGE_KEY='notes_app_v1',DESKTOP_POS_KEY='desktop_positions_v1',PINNED_KEY='pinned_apps_v1';
+  const WALLPAPER_KEY='wallpaper_v1';
+
   let notes=[],selectedId=null,filter='',locked=false;
   const defaultDesktopItems=[{id:'notes',title:'Notes',icon:'📝',action:'open-notes'},{id:'recycle',title:'Recycle Bin',icon:'🗑️',action:'noop'}];
   let desktopPositions={},desktopItems=JSON.parse(JSON.stringify(defaultDesktopItems)),pinnedApps=[];
+
   const CELL_W=96,CELL_H=110,PADDING=32,GAP_X=18,GAP_Y=0;
+
+  /* Load persisted small state */
   function loadPersisted(){try{const pos=JSON.parse(localStorage.getItem(DESKTOP_POS_KEY)||'null');if(pos&&typeof pos==='object')desktopPositions=pos}catch(e){desktopPositions={}}try{pinnedApps=JSON.parse(localStorage.getItem(PINNED_KEY)||'null')||[]}catch(e){pinnedApps=[]}}
   loadPersisted();
+
   const REQUIRED_PIN='imthebest';
+
   function computeGridCols(){const rect=desktopInner.getBoundingClientRect();const availableWidth=Math.max(0,rect.width-(PADDING*2));const colWidth=CELL_W+GAP_X;return Math.max(1,Math.floor((availableWidth+GAP_X)/colWidth))}
   function gridPositionForIndex(i){const cols=computeGridCols();const col=i%cols;const row=Math.floor(i/cols);return{ x:PADDING+col*(CELL_W+GAP_X), y:PADDING+row*(CELL_H+GAP_Y)}}
   function snapToGrid(x,y){const rect=desktopInner.getBoundingClientRect();const cols=computeGridCols();const colWidth=CELL_W+GAP_X;const rowHeight=CELL_H+GAP_Y;let rx=x-rect.left-PADDING;let ry=y-rect.top-PADDING;let col=Math.round(rx/colWidth);let row=Math.round(ry/rowHeight);col=Math.max(0,Math.min(cols-1,col));const maxRows=Math.max(1,Math.floor((rect.height-PADDING*2+GAP_Y)/rowHeight));row=Math.max(0,Math.min(maxRows-1,row));return{ x:PADDING+col*colWidth, y:PADDING+row*rowHeight}}
+
   function renderDesktop(){
     if(!desktopInner) return;
     desktopInner.innerHTML='';
@@ -299,7 +404,11 @@
 
   function clearSelections(){document.querySelectorAll('.desktop .icon.selected').forEach(n=>n.classList.remove('selected'))}
   document.addEventListener('click',e=>{if(!e.target.closest('.desktop .icon'))clearSelections()});
-  function handleDesktopAction(item){if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}}
+  function handleDesktopAction(item){
+    if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}
+    else if(item.id==='settings' || item.title==='Settings'){openSettings()}
+  }
+
   let ctxTargetItem=null;
   function showContextMenuFor(item,x,y){ctxTargetItem=item;const isPinned=pinnedApps.includes(item.id);ctxPin.textContent=isPinned?'Unpin from taskbar':'Pin to taskbar';ctxMenu.style.left=x+'px';ctxMenu.style.top=y+'px';ctxMenu.style.display='block';ctxMenu.setAttribute('aria-hidden','false');requestAnimationFrame(()=>{const r=ctxMenu.getBoundingClientRect();if(r.right>window.innerWidth)ctxMenu.style.left=(window.innerWidth-r.width-12)+'px';if(r.bottom>window.innerHeight)ctxMenu.style.top=(window.innerHeight-r.height-12)+'px'})}
   function hideContextMenu(){ctxMenu.style.display='none';ctxMenu.setAttribute('aria-hidden','true');ctxTargetItem=null}
@@ -310,7 +419,7 @@
 
   function togglePin(id){const idx=pinnedApps.indexOf(id);if(idx===-1)pinnedApps.push(id);else pinnedApps.splice(idx,1);persistPinned();renderTaskbarPins()}
   function persistPinned(){try{localStorage.setItem(PINNED_KEY,JSON.stringify(pinnedApps))}catch(e){}}
-  function renderTaskbarPins(){taskbarPinsEl.innerHTML='';pinnedApps.forEach(id=>{const item=desktopItems.find(x=>x.id===id)||defaultDesktopItems.find(x=>x.id===id);if(!item) return;const el=document.createElement('div');el.className='taskbar-pin';el.setAttribute('title',item.title);el.setAttribute('data-id',item.id);el.innerHTML=`<div style="width:28px;height:28;display:grid;place-items:center">${item.icon}</div>`;el.addEventListener('click',()=>{if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}});el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showContextMenuFor(item,e.clientX,e.clientY)});taskbarPinsEl.appendChild(el)})}
+  function renderTaskbarPins(){taskbarPinsEl.innerHTML='';pinnedApps.forEach(id=>{const item=desktopItems.find(x=>x.id===id)||defaultDesktopItems.find(x=>x.id===id);if(!item) return;const el=document.createElement('div');el.className='taskbar-pin';el.setAttribute('title',item.title);el.setAttribute('data-id',item.id);el.innerHTML=`<div style="width:28px;height:28;display:grid;place-items:center">${item.icon}</div>`;el.addEventListener('click',()=>{if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}else if(item.action==='open-settings'){openSettings();}});el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showContextMenuFor(item,e.clientX,e.clientY)});taskbarPinsEl.appendChild(el)})}
   function persistDesktopPositions(){try{localStorage.setItem(DESKTOP_POS_KEY,JSON.stringify(desktopPositions))}catch(e){}}
   function focusPin(){if(pinInput){pinInput.focus();pinInput.select()}}
   function hideLogin(){if(loginScreen)loginScreen.style.display='none';document.body.classList.remove('locked');if(getComputedStyle(winNotes).display!=='none')noteTextEl.focus()}
@@ -329,6 +438,7 @@
   startMenu.addEventListener('click',e=>e.stopPropagation());
   startSearch.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();const items=document.querySelectorAll('#startAppList .app-item');items.forEach(it=>{it.style.display=(!q||it.textContent.toLowerCase().includes(q))?'flex':'none'})});
 
+  /* NOTES APP helpers (unchanged core) */
   function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,9)}
   function now(){return Date.now()}
   function formatTime(ts){const d=new Date(ts);return d.toLocaleString([],{hour:'2-digit',minute:'2-digit',month:'short',day:'numeric'})}
@@ -380,8 +490,188 @@
   desktopInner.addEventListener('keydown',e=>{if(e.key==='Enter'){const focused=document.activeElement;if(focused&&focused.classList.contains('icon')){const id=focused.getAttribute('data-id');const item=desktopItems.find(x=>x.id===id);if(item)handleDesktopAction(item)}}});
 
   window.addEventListener('resize',()=>{const rect=desktopInner.getBoundingClientRect();const cols=computeGridCols();const maxRows=Math.max(1,Math.floor((rect.height-PADDING*2+GAP_Y)/(CELL_H+GAP_Y)));Object.keys(desktopPositions).forEach(id=>{let pos=desktopPositions[id];if(!pos) return;let relX=pos.x-PADDING;let relY=pos.y-PADDING;const colWidth=CELL_W+GAP_X;const rowHeight=CELL_H+GAP_Y;let col=Math.round(relX/colWidth);let row=Math.round(relY/rowHeight);col=Math.max(0,Math.min(cols-1,col));row=Math.max(0,Math.min(maxRows-1,row));desktopPositions[id]={x:PADDING+col*colWidth,y:PADDING+row*rowHeight}});persistDesktopPositions();renderDesktop()});
+
+  /* ---------------------------
+     Settings app behavior
+     ---------------------------*/
+  const wallpaperEl = document.querySelector('.wallpaper');
+
+  function setWallpaper(url, persist = false){
+    if(!wallpaperEl) return;
+    if(!url){
+      wallpaperEl.style.backgroundImage = '';
+      wallpaperEl.style.backgroundColor = '#111';
+      wallpaperEl.style.backgroundRepeat = '';
+      wallpaperEl.style.backgroundSize = '';
+      wallpaperEl.style.backgroundPosition = '';
+    } else {
+      // use url wrapped in url()
+      wallpaperEl.style.backgroundImage = `url("${url}")`;
+      wallpaperEl.style.backgroundSize = 'cover';
+      wallpaperEl.style.backgroundPosition = 'center';
+      wallpaperEl.style.backgroundRepeat = 'no-repeat';
+    }
+    // update preview too
+    if(wallPreview) wallPreview.style.backgroundImage = url?`url("${url}")`:'';
+    if(persist){
+      try{localStorage.setItem(WALLPAPER_KEY, JSON.stringify({url}))}catch(e){}
+    }
+  }
+
+  function loadWallpaperFromStorage(){
+    try{
+      const raw = localStorage.getItem(WALLPAPER_KEY);
+      if(!raw) return;
+      const obj = JSON.parse(raw);
+      if(obj && obj.url){
+        setWallpaper(obj.url, false);
+      }
+    }catch(e){}
+  }
+
+  // presets (local filenames or placeholders user likely has). Use safe sample names.
+  const presets = [
+    {name:'Default', url:'WALLPEPPA.jpeg'},
+    {name:'Blue', url:'wall1.jpg'},
+    {name:'Mountains', url:'wall2.jpg'},
+    {name:'Abstract', url:'wall3.jpg'}
+  ];
+
+  function renderPresets(){
+    if(!presetGrid) return;
+    presetGrid.innerHTML='';
+    presets.forEach(p=>{
+      const el=document.createElement('div');
+      el.className='preset-thumb';
+      el.title = p.name;
+      el.style.backgroundImage = `url("${p.url}")`;
+      el.addEventListener('click',()=>{ setWallpaper(p.url, false); });
+      presetGrid.appendChild(el);
+    });
+  }
+
+  // wire file input
+  wallFile.addEventListener('change', (ev)=>{
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const dataUrl = e.target.result;
+      // preview immediately
+      setWallpaper(dataUrl, false);
+      // store temporarily in the URL input so user can save or change
+      wallUrl.value = '';
+    };
+    reader.readAsDataURL(f);
+  });
+
+  // apply from URL
+  applyUrl.addEventListener('click', ()=>{
+    const v = (wallUrl.value||'').trim();
+    if(!v) return alert('Enter an image URL first.');
+    // try to set it; note: cross-origin may affect real fetches but background can still reference URL
+    setWallpaper(v, false);
+  });
+
+  // Save button - persist current preview as wallpaper
+  saveWallpaperBtn.addEventListener('click', ()=>{
+    // take whatever preview is set in wallPreview or wallpaperEl
+    const style = wallpaperEl.style.backgroundImage;
+    if(!style || style===''){
+      // resetting
+      try{localStorage.removeItem(WALLPAPER_KEY);}catch(e){}
+      alert('Wallpaper reset to default.');
+      loadWallpaperFromStorage();
+      return;
+    }
+    // style looks like: url("..."), extract inside quotes
+    const match = style.match(/url\(["']?(.*?)["']?\)/);
+    const url = match ? match[1] : null;
+    if(url){
+      setWallpaper(url, true);
+      alert('Wallpaper saved.');
+    } else {
+      alert('Could not determine preview image to save.');
+    }
+  });
+
+  // Reset to default
+  resetWallpaper.addEventListener('click', ()=>{
+    if(confirm('Reset wallpaper to default?')){
+      try{localStorage.removeItem(WALLPAPER_KEY);}catch(e){}
+      // fallback to original file
+      setWallpaper('WALLPEPPA.jpeg', false);
+    }
+  });
+
+  // initialize settings UI
+  renderPresets();
+  loadWallpaperFromStorage();
+
+  // open/close settings
+  function openSettings(){
+    if(isLocked()){focusPin();return}
+    winSettings.style.display='flex';
+    bringToFront(winSettings);
+    // ensure preview matches current wallpaper
+    const bg = wallpaperEl.style.backgroundImage;
+    wallPreview.style.backgroundImage = bg || '';
+    // put focus on URL field after a tick
+    setTimeout(()=>wallUrl.focus(),60);
+  }
+  function closeSettings(){
+    winSettings.style.display='none';
+  }
+
+  // attach Start menu item and tile to open settings
+  // find the app-item node that contains "Settings"
+  Array.from(startAppList.querySelectorAll('.app-item')).forEach(it=>{
+    if((it.textContent||'').toLowerCase().includes('settings')){
+      it.style.cursor='pointer';
+      it.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openSettings();
+        closeStartMenu();
+      });
+    }
+  });
+  if(tileSettings){
+    tileSettings.addEventListener('click', (e)=>{ e.stopPropagation(); openSettings(); closeStartMenu(); });
+  }
+
+  // settings window controls
+  settingsMin.addEventListener('click', ()=>{ if(isLocked()){focusPin();return} winSettings.style.display='none' });
+  settingsClose.addEventListener('click', ()=>{ if(isLocked()){focusPin();return} if(confirm('Close settings?')) closeSettings(); });
+  settingsFull.addEventListener('click', ()=>{ if(isLocked()){focusPin();return} if(!winSettings.classList.contains('fullscreen')){ try{winSettings.dataset.prev=JSON.stringify({left:winSettings.style.left||'',top:winSettings.style.top||'',width:winSettings.style.width||'',height:winSettings.style.height||'',borderRadius:winSettings.style.borderRadius||''})}catch(e){}winSettings.classList.add('fullscreen');winSettings.style.left='';winSettings.style.top='';winSettings.style.width='';winSettings.style.height='';winSettings.style.borderRadius='0'} else { try{const prev=winSettings.dataset.prev?JSON.parse(winSettings.dataset.prev):null;if(prev){winSettings.style.left=prev.left||'';winSettings.style.top=prev.top||'';winSettings.style.width=prev.width||'';winSettings.style.height=prev.height||'';winSettings.style.borderRadius=prev.borderRadius||''}}catch(e){}winSettings.classList.remove('fullscreen') } });
+
+  // Make settings window draggable (reuse the draggable pattern)
+  (function makeDraggableSettings(){const header=winSettings.querySelector('[data-drag="true"]');let dragging=false,sx=0,sy=0,ox=0,oy=0;header.addEventListener('mousedown',e=>{if(winSettings.classList.contains('fullscreen')) return; if(isLocked()){focusPin();return}dragging=true;sx=e.clientX;sy=e.clientY;const r=winSettings.getBoundingClientRect();ox=r.left;oy=r.top;header.style.cursor='grabbing'});window.addEventListener('mousemove',e=>{if(!dragging) return;const dx=e.clientX-sx,dy=e.clientY-sy;winSettings.style.left=Math.max(8,ox+dx)+'px';winSettings.style.top=Math.max(8,oy+dy)+'px'});window.addEventListener('mouseup',()=>{dragging=false;header.style.cursor='grab'})})();
+
+  // Helper: clicking the Settings "Wallpaper" category scrolls or focuses the wallpaper area
+  document.getElementById('settings-category-wall').addEventListener('click', ()=>{
+    const el = document.getElementById('settingsMain');
+    if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); }
+  });
+
+  /* Set simple desktop icon for Settings so users can drag/launch from desktop */
+  // add to desktopItems if it doesn't exist
+  (function ensureSettingsIcon(){
+    const exists = desktopItems.find(i=>i.title==='Settings' || i.id==='settings');
+    if(!exists){
+      // use the settings.png path as the icon HTML so it shows everywhere (desktop, taskbar pins)
+      const imgHtml = '<img src="settings.png" alt="Settings" style="width:36px;height:36px;object-fit:contain;border-radius:8px;display:block">';
+      desktopItems.push({id:'settings', title:'Settings', icon: imgHtml, action:'open-settings'});
+      renderDesktop();
+    }
+  })();
+
+  // ensure the tile in start also opens settings (also handled above)
+
+  /* Apply persisted wallpaper on load again (safety) */
+  loadWallpaperFromStorage();
+
+  /* end settings app behavior */
 })();
 </script>
 </body>
 </html>
-
