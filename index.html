@@ -3,8 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Welcome To Windows 12</title>
+<title>Windows 12</title>
 <style>
+  :root{
+    --taskbar-bg: rgba(255,255,255,0.20);
+    --taskbar-icon-bg: rgba(255,255,255,0.12);
+    --taskbar-icon-active-bg: rgba(255,255,255,0.22);
+  }
+
   *{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;user-select:none}
   html,body{height:100%;width:100%;overflow:hidden;background:#111}
   body.locked{overflow:hidden}
@@ -32,11 +38,14 @@
   .btn-ghost{padding:8px 12px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.08);color:#fff;cursor:pointer}
   .btn-primary{padding:8px 12px;border-radius:8px;background:linear-gradient(180deg,#0b84ff,#0463d6);border:0;color:#fff;cursor:pointer}
   .login-hint{font-size:12px;color:rgba(255,255,255,.75);margin-top:6px}
-  .taskbar{position:absolute;left:0;right:0;bottom:0;height:55px;background:rgba(255,255,255,.2);backdrop-filter:blur(16px);display:flex;align-items:center;padding:6px 12px;gap:12px;z-index:50}
+
+  /* use css variables for taskbar colors so they can be changed live */
+  .taskbar{position:absolute;left:0;right:0;bottom:0;height:55px;background:var(--taskbar-bg);backdrop-filter:blur(16px);display:flex;align-items:center;padding:6px 12px;gap:12px;z-index:50}
   .taskbar-left{display:flex;gap:8px;align-items:center}
-  .taskbar-icon{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.12);cursor:pointer}
-  .taskbar-icon.active{box-shadow:0 8px 18px rgba(0,0,0,.5);background:rgba(255,255,255,.22)}
+  .taskbar-icon{width:44px;height:44px;border-radius:8px;display:grid;place-items:center;background:var(--taskbar-icon-bg);cursor:pointer}
+  .taskbar-icon.active{box-shadow:0 8px 18px rgba(0,0,0,.5);background:var(--taskbar-icon-active-bg)}
   .taskbar-pin{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;background:rgba(0,0,0,.05);cursor:pointer;margin-left:6px}
+
   .window{position:absolute;left:80px;top:60px;width:900px;height:600px;border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.98),#fbfbff);box-shadow:0 20px 60px rgba(2,6,23,.7);border:1px solid rgba(0,0,0,.06);display:flex;flex-direction:column;z-index:40}
   .titlebar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:linear-gradient(180deg,rgba(255,255,255,.98),#f7f7fb);cursor:grab}
   .title-left{display:flex;align-items:center;gap:12px}
@@ -97,12 +106,6 @@
   .preset-grid{display:flex;gap:10px;flex-wrap:wrap}
   .preset-thumb{width:120px;height:80px;border-radius:8px;background:#eee;background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);cursor:pointer;display:grid;place-items:center;font-size:12px;color:#fff}
   .preview-box{width:100%;height:160px;border-radius:8px;border:1px solid rgba(0,0,0,.06);background-size:cover;background-position:center;overflow:hidden;margin-bottom:10px}
-
-  /* IMAGE ICON STYLES (for inserted settings image) */
-  .icon .ico img{width:36px;height:36px;object-fit:contain;border-radius:8px;display:block}
-  .t-icon img{width:22px;height:22px;object-fit:contain;display:block;border-radius:6px}
-  .badge img{width:20px;height:20px;object-fit:contain;display:block;border-radius:6px}
-
   @media (max-width:1000px){.start-menu{left:8px;right:8px;width:auto}.tiles-grid{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:960px){.window{left:8px;top:8px;right:8px;width:calc(100% - 16px);height:calc(100% - 80px)}.sidebar{width:260px}}
 </style>
@@ -126,7 +129,7 @@
         <button id="pinCancel" class="btn-ghost" type="button">Cancel</button>
         <button id="pinSubmit" class="btn-primary" type="button">Sign in</button>
       </div>
-      <div class="login-hint">I am number #1</div>
+      <div class="login-hint">You'll never guess the password BUM🤣</div>
     </div>
   </div>
 </div>
@@ -157,13 +160,7 @@
         <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#e6f3ff,#cfe6ff);display:inline-grid;place-items:center">🔍</span> Cortana</div>
         <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#fbe6ff,#f3c8ff);display:inline-grid;place-items:center">✉️</span> Mail</div>
         <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#e6f7ff,#cfefff);display:inline-grid;place-items:center">🎧</span> Groove Music</div>
-        <!-- Settings app item: use settings.png -->
-        <div class="app-item">
-          <span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#ffdbe6,#ffbfd6);display:inline-grid;place-items:center">
-            <img src="settings.png" alt="Settings" style="width:20px;height:20px;object-fit:contain;border-radius:4px;display:block">
-          </span>
-          Settings
-        </div>
+        <div class="app-item"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#ffdbe6,#ffbfd6);display:inline-grid;place-items:center">⚙️</span> Settings</div>
       </div>
       <div style="padding-top:8px;"><div class="app-item" style="font-size:13px;color:#556b88;justify-content:flex-start">Power</div></div>
     </div>
@@ -187,14 +184,7 @@
         <div class="tile store" role="gridcell" title="Microsoft Store"><div class="t-icon">🏬</div><div>Microsoft Store</div></div>
         <div class="tile spotify" role="gridcell" title="Spotify"><div class="t-icon">♪</div><div>Spotify</div></div>
         <div class="tile netflix" role="gridcell" title="Disney+"><div class="t-icon">★</div><div>Disney+</div></div>
-
-        <!-- Settings tile: use settings.png -->
-        <div class="tile" role="gridcell" title="Settings" id="tile-settings" style="background:linear-gradient(180deg,#8b5cf6,#6b21a8)">
-          <div class="t-icon">
-            <img src="settings.png" alt="Settings" />
-          </div>
-          <div>Settings</div>
-        </div>
+        <div class="tile" role="gridcell" title="Settings" id="tile-settings" style="background:linear-gradient(180deg,#8b5cf6,#6b21a8)"><div class="t-icon">⚙️</div><div>Settings</div></div>
       </div>
 
       <div class="start-footer"><div>All apps</div><div>Quick access</div></div>
@@ -204,9 +194,14 @@
 
 <div class="taskbar" role="toolbar" aria-label="Taskbar">
   <div class="taskbar-left">
-    <div id="startBtn" class="taskbar-icon" title="Start" aria-haspopup="true" aria-expanded="false" role="button"><img src="logo.png" width="26" alt="Start"></div>
+    <!-- START LOGO: hotswappable image -->
+    <div id="startBtn" class="taskbar-icon" title="Start" aria-haspopup="true" aria-expanded="false" role="button">
+      <!-- using uploaded file path -->
+      <img id="startLogo" src="/mnt/data/settings.png" width="26" alt="Start">
+    </div>
+
     <div id="taskbarPins" style="display:flex;gap:8px;align-items:center;"></div>
-    <div id="tb-notes" class="taskbar-icon active" title="Notes">📝</div>
+    <!-- notes icon removed from taskbar as requested -->
   </div>
   <div style="margin-left:auto;color:#fff;font-size:13px" id="clock">--:--</div>
 </div>
@@ -244,16 +239,7 @@
 <!-- Settings window -->
 <div id="win-settings" class="window" role="dialog" aria-label="Settings" style="display:none">
   <div class="titlebar" data-drag="true">
-    <!-- badge replaced with image -->
-    <div class="title-left">
-      <div class="badge">
-        <img src="settings.png" alt="Settings">
-      </div>
-      <div>
-        <div style="font-weight:700">Settings</div>
-        <div style="font-size:12px;color:#3b556f">System & personalization</div>
-      </div>
-    </div>
+    <div class="title-left"><div class="badge">S</div><div><div style="font-weight:700">Settings</div><div style="font-size:12px;color:#3b556f">System & personalization</div></div></div>
     <div class="win-controls"><div id="settings-min" class="win-btn" title="Minimize">—</div><div id="settings-full" class="win-btn" title="Fullscreen">▢</div><div id="settings-close" class="win-btn" title="Close">✕</div></div>
   </div>
 
@@ -289,15 +275,111 @@
           <div style="flex:1"></div>
           <button id="saveWallpaper" class="btn primary">Save</button>
         </div>
+
+        <hr style="margin:12px 0;border:0;border-top:1px solid rgba(0,0,0,.06)">
+
+        <div style="font-weight:600;margin-bottom:8px">Appearance</div>
+
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px">
+          <!-- Taskbar BG -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:13px">Taskbar background</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="taskbarBgPicker" type="color" value="#ffffff" title="Taskbar background"/>
+              <input id="taskbarBgAlpha" type="range" min="0" max="100" value="20" />
+              <div style="font-size:12px;color:#556b88">alpha <span id="taskbarBgAlphaLabel">0.20</span></div>
+            </div>
+          </div>
+
+          <!-- Icon BG -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:13px">Icon background</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="iconBgPicker" type="color" value="#ffffff" title="Icon background"/>
+              <input id="iconBgAlpha" type="range" min="0" max="100" value="12" />
+              <div style="font-size:12px;color:#556b88">alpha <span id="iconBgAlphaLabel">0.12</span></div>
+            </div>
+          </div>
+
+          <!-- Active Icon BG -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:13px">Active icon background</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input id="iconActivePicker" type="color" value="#ffffff" title="Active icon background"/>
+              <input id="iconActiveAlpha" type="range" min="0" max="100" value="22" />
+              <div style="font-size:12px;color:#556b88">alpha <span id="iconActiveAlphaLabel">0.22</span></div>
+            </div>
+          </div>
+
+          <div style="flex-basis:100%;height:0"></div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:13px">Start logo (upload)</label>
+            <input id="logoFile" type="file" accept="image/*" />
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="font-size:13px">Or logo URL</label>
+            <input id="logoUrl" placeholder="https://example.com/mylogo.png" style="padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,.06)" />
+            <button id="applyLogoUrl" class="btn">Apply logo URL</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="resetAppearance" class="btn">Reset appearance</button>
+          <div style="flex:1"></div>
+          <button id="saveAppearance" class="btn primary">Save appearance</button>
+        </div>
+
       </div>
     </div>
   </div>
 
 </div>
 
+<!-- File Manager window (example 'Files' app with single drive "Wonderive") -->
+<div id="win-files" class="window" role="dialog" aria-label="Files" style="display:none;left:60px;top:70px;width:980px;height:620px">
+  <div class="titlebar" data-drag="true">
+    <div class="title-left"><div class="badge">F</div><div><div style="font-weight:700">Files</div><div style="font-size:12px;color:#3b556f">File manager — Wonderive</div></div></div>
+    <div class="win-controls"><div id="files-min" class="win-btn" title="Minimize">—</div><div id="files-full" class="win-btn" title="Fullscreen">▢</div><div id="files-close" class="win-btn" title="Close">✕</div></div>
+  </div>
+  <div class="content" style="align-items:stretch">
+    <div class="sidebar" style="width:260px;padding:12px">
+      <div style="font-weight:700;margin-bottom:10px">This PC</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="app-item" style="cursor:default"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#f0f6ff,#d7e9ff);display:inline-grid;place-items:center">📁</span> Quick access</div>
+        <div class="app-item" style="cursor:default"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#d4f1d4,#a8e6a8);display:inline-grid;place-items:center">🖴</span> Wonderive</div>
+        <div style="height:8px"></div>
+        <div style="font-size:13px;color:#556b88">Folders</div>
+        <div class="app-item" id="desktop-folder-open" style="cursor:pointer"><span style="width:28px;height:28;border-radius:6px;background:linear-gradient(180deg,#fff3d6,#ffe1a8);display:inline-grid;place-items:center">🗂️</span> Desktop (Apps)</div>
+      </div>
+    </div>
+
+    <div class="editor" style="flex:1;display:flex;flex-direction:column;gap:8px;padding:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-weight:700">Wonderive</div>
+        <div style="font-size:13px;color:#556b88">1 drive available</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-direction:column;flex:1">
+        <div style="background:#fff;border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;box-shadow:inset 0 -20px 40px rgba(0,0,0,.03)">
+          <div style="width:80px;height:80px;border-radius:8px;background:linear-gradient(180deg,#e6f7ff,#cfefff);display:grid;place-items:center;font-weight:700">W</div>
+          <div style="flex:1">
+            <div style="font-weight:700">Wonderive</div>
+            <div style="font-size:13px;color:#556b88;margin-top:6px">Drive · 50 GB total · 42 GB free</div>
+          </div>
+        </div>
+
+        <div style="flex:1;overflow:auto;background:transparent;border-radius:8px;padding:8px">
+          <div id="filesList" style="display:flex;flex-wrap:wrap;gap:10px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
-  /* existing references */
+  /* references */
   const loginScreen=document.getElementById('loginScreen'),pinInput=document.getElementById('pinInput'),pinSubmit=document.getElementById('pinSubmit'),pinCancel=document.getElementById('pinCancel');
   const desktopInner=document.getElementById('desktopInner'),ctxMenu=document.getElementById('ctxMenu'),ctxOpen=document.getElementById('ctxOpen'),ctxPin=document.getElementById('ctxPin');
   const taskbarPinsEl=document.getElementById('taskbarPins'),tbNotes=document.getElementById('tb-notes'),winNotes=document.getElementById('win-notes');
@@ -308,7 +390,6 @@
   const startBtn=document.getElementById('startBtn'),startMenu=document.getElementById('startMenu'),startSearch=document.getElementById('startSearch');
   const startAppList=document.getElementById('startAppList'),tileSettings=document.getElementById('tile-settings');
 
-  /* settings elements */
   const winSettings = document.getElementById('win-settings');
   const settingsMin = document.getElementById('settings-min');
   const settingsFull = document.getElementById('settings-full');
@@ -321,8 +402,35 @@
   const resetWallpaper = document.getElementById('resetWallpaper');
   const saveWallpaperBtn = document.getElementById('saveWallpaper');
 
+  /* appearance elements */
+  const taskbarBgPicker = document.getElementById('taskbarBgPicker');
+  const taskbarBgAlpha = document.getElementById('taskbarBgAlpha');
+  const taskbarBgAlphaLabel = document.getElementById('taskbarBgAlphaLabel');
+  const iconBgPicker = document.getElementById('iconBgPicker');
+  const iconBgAlpha = document.getElementById('iconBgAlpha');
+  const iconBgAlphaLabel = document.getElementById('iconBgAlphaLabel');
+  const iconActivePicker = document.getElementById('iconActivePicker');
+  const iconActiveAlpha = document.getElementById('iconActiveAlpha');
+  const iconActiveAlphaLabel = document.getElementById('iconActiveAlphaLabel');
+  const logoFile = document.getElementById('logoFile');
+  const logoUrl = document.getElementById('logoUrl');
+  const applyLogoUrl = document.getElementById('applyLogoUrl');
+  const saveAppearance = document.getElementById('saveAppearance');
+  const resetAppearance = document.getElementById('resetAppearance');
+  const startLogo = document.getElementById('startLogo');
+
+  /* file manager elements */
+  const winFiles = document.getElementById('win-files');
+  const filesList = document.getElementById('filesList');
+  const desktopFolderOpen = document.getElementById('desktop-folder-open');
+  const filesClose = document.getElementById('files-close');
+  const filesMin = document.getElementById('files-min');
+  const filesFull = document.getElementById('files-full');
+
   const STORAGE_KEY='notes_app_v1',DESKTOP_POS_KEY='desktop_positions_v1',PINNED_KEY='pinned_apps_v1';
   const WALLPAPER_KEY='wallpaper_v1';
+  const STORAGE_LOGO = 'win12_logo_v1';
+  const STORAGE_APPEAR = 'win12_appearance_v1';
 
   let notes=[],selectedId=null,filter='',locked=false;
   const defaultDesktopItems=[{id:'notes',title:'Notes',icon:'📝',action:'open-notes'},{id:'recycle',title:'Recycle Bin',icon:'🗑️',action:'noop'}];
@@ -330,7 +438,7 @@
 
   const CELL_W=96,CELL_H=110,PADDING=32,GAP_X=18,GAP_Y=0;
 
-  /* Load persisted small state */
+  /* Load small persisted state */
   function loadPersisted(){try{const pos=JSON.parse(localStorage.getItem(DESKTOP_POS_KEY)||'null');if(pos&&typeof pos==='object')desktopPositions=pos}catch(e){desktopPositions={}}try{pinnedApps=JSON.parse(localStorage.getItem(PINNED_KEY)||'null')||[]}catch(e){pinnedApps=[]}}
   loadPersisted();
 
@@ -407,6 +515,7 @@
   function handleDesktopAction(item){
     if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}
     else if(item.id==='settings' || item.title==='Settings'){openSettings()}
+    else if(item.id==='files' || item.title==='Files'){openFiles()}
   }
 
   let ctxTargetItem=null;
@@ -419,7 +528,7 @@
 
   function togglePin(id){const idx=pinnedApps.indexOf(id);if(idx===-1)pinnedApps.push(id);else pinnedApps.splice(idx,1);persistPinned();renderTaskbarPins()}
   function persistPinned(){try{localStorage.setItem(PINNED_KEY,JSON.stringify(pinnedApps))}catch(e){}}
-  function renderTaskbarPins(){taskbarPinsEl.innerHTML='';pinnedApps.forEach(id=>{const item=desktopItems.find(x=>x.id===id)||defaultDesktopItems.find(x=>x.id===id);if(!item) return;const el=document.createElement('div');el.className='taskbar-pin';el.setAttribute('title',item.title);el.setAttribute('data-id',item.id);el.innerHTML=`<div style="width:28px;height:28;display:grid;place-items:center">${item.icon}</div>`;el.addEventListener('click',()=>{if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}else if(item.action==='open-settings'){openSettings();}});el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showContextMenuFor(item,e.clientX,e.clientY)});taskbarPinsEl.appendChild(el)})}
+  function renderTaskbarPins(){taskbarPinsEl.innerHTML='';pinnedApps.forEach(id=>{const item=desktopItems.find(x=>x.id===id)||defaultDesktopItems.find(x=>x.id===id);if(!item) return;const el=document.createElement('div');el.className='taskbar-pin';el.setAttribute('title',item.title);el.setAttribute('data-id',item.id);el.innerHTML=`<div style="width:28px;height:28;display:grid;place-items:center">${item.icon}</div>`;el.addEventListener('click',()=>{if(item.action==='open-notes'){winNotes.style.display='flex';bringToFront(winNotes)}else if(item.action==='open-files'){openFiles()}});el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showContextMenuFor(item,e.clientX,e.clientY)});taskbarPinsEl.appendChild(el)})}
   function persistDesktopPositions(){try{localStorage.setItem(DESKTOP_POS_KEY,JSON.stringify(desktopPositions))}catch(e){}}
   function focusPin(){if(pinInput){pinInput.focus();pinInput.select()}}
   function hideLogin(){if(loginScreen)loginScreen.style.display='none';document.body.classList.remove('locked');if(getComputedStyle(winNotes).display!=='none')noteTextEl.focus()}
@@ -483,7 +592,10 @@
   function updateClock(){const d=new Date();clockEl.textContent=d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
   updateClock();setInterval(updateClock,30000);
 
-  tbNotes.addEventListener('click',()=>{if(isLocked()){focusPin();return}if(getComputedStyle(winNotes).display==='none'){winNotes.style.display='flex';bringToFront(winNotes)}else{winNotes.style.display='none'}});
+  // guard: tbNotes element was removed from DOM; only attach if exists
+  if(tbNotes){
+    tbNotes.addEventListener('click',()=>{if(isLocked()){focusPin();return}if(getComputedStyle(winNotes).display==='none'){winNotes.style.display='flex';bringToFront(winNotes)}else{winNotes.style.display='none'}});  
+  }
 
   document.addEventListener('click',function(e){if(isLocked()){if(!loginScreen.contains(e.target)) focusPin()}},true);
 
@@ -492,7 +604,7 @@
   window.addEventListener('resize',()=>{const rect=desktopInner.getBoundingClientRect();const cols=computeGridCols();const maxRows=Math.max(1,Math.floor((rect.height-PADDING*2+GAP_Y)/(CELL_H+GAP_Y)));Object.keys(desktopPositions).forEach(id=>{let pos=desktopPositions[id];if(!pos) return;let relX=pos.x-PADDING;let relY=pos.y-PADDING;const colWidth=CELL_W+GAP_X;const rowHeight=CELL_H+GAP_Y;let col=Math.round(relX/colWidth);let row=Math.round(relY/rowHeight);col=Math.max(0,Math.min(cols-1,col));row=Math.max(0,Math.min(maxRows-1,row));desktopPositions[id]={x:PADDING+col*colWidth,y:PADDING+row*rowHeight}});persistDesktopPositions();renderDesktop()});
 
   /* ---------------------------
-     Settings app behavior
+     Settings app behavior (wallpaper + presets already integrated)
      ---------------------------*/
   const wallpaperEl = document.querySelector('.wallpaper');
 
@@ -505,13 +617,11 @@
       wallpaperEl.style.backgroundSize = '';
       wallpaperEl.style.backgroundPosition = '';
     } else {
-      // use url wrapped in url()
       wallpaperEl.style.backgroundImage = `url("${url}")`;
       wallpaperEl.style.backgroundSize = 'cover';
       wallpaperEl.style.backgroundPosition = 'center';
       wallpaperEl.style.backgroundRepeat = 'no-repeat';
     }
-    // update preview too
     if(wallPreview) wallPreview.style.backgroundImage = url?`url("${url}")`:'';
     if(persist){
       try{localStorage.setItem(WALLPAPER_KEY, JSON.stringify({url}))}catch(e){}
@@ -529,7 +639,6 @@
     }catch(e){}
   }
 
-  // presets (local filenames or placeholders user likely has). Use safe sample names.
   const presets = [
     {name:'Default', url:'WALLPEPPA.jpeg'},
     {name:'Blue', url:'wall1.jpg'},
@@ -557,34 +666,26 @@
     const reader = new FileReader();
     reader.onload = function(e){
       const dataUrl = e.target.result;
-      // preview immediately
       setWallpaper(dataUrl, false);
-      // store temporarily in the URL input so user can save or change
       wallUrl.value = '';
     };
     reader.readAsDataURL(f);
   });
 
-  // apply from URL
   applyUrl.addEventListener('click', ()=>{
     const v = (wallUrl.value||'').trim();
     if(!v) return alert('Enter an image URL first.');
-    // try to set it; note: cross-origin may affect real fetches but background can still reference URL
     setWallpaper(v, false);
   });
 
-  // Save button - persist current preview as wallpaper
   saveWallpaperBtn.addEventListener('click', ()=>{
-    // take whatever preview is set in wallPreview or wallpaperEl
     const style = wallpaperEl.style.backgroundImage;
     if(!style || style===''){
-      // resetting
       try{localStorage.removeItem(WALLPAPER_KEY);}catch(e){}
       alert('Wallpaper reset to default.');
       loadWallpaperFromStorage();
       return;
     }
-    // style looks like: url("..."), extract inside quotes
     const match = style.match(/url\(["']?(.*?)["']?\)/);
     const url = match ? match[1] : null;
     if(url){
@@ -595,16 +696,13 @@
     }
   });
 
-  // Reset to default
   resetWallpaper.addEventListener('click', ()=>{
     if(confirm('Reset wallpaper to default?')){
       try{localStorage.removeItem(WALLPAPER_KEY);}catch(e){}
-      // fallback to original file
       setWallpaper('WALLPEPPA.jpeg', false);
     }
   });
 
-  // initialize settings UI
   renderPresets();
   loadWallpaperFromStorage();
 
@@ -613,18 +711,18 @@
     if(isLocked()){focusPin();return}
     winSettings.style.display='flex';
     bringToFront(winSettings);
-    // ensure preview matches current wallpaper
     const bg = wallpaperEl.style.backgroundImage;
-    wallPreview.style.backgroundImage = bg || '';
-    // put focus on URL field after a tick
-    setTimeout(()=>wallUrl.focus(),60);
+    if(wallPreview) wallPreview.style.backgroundImage = bg || '';
+    setTimeout(()=>{ if(logoUrl) logoUrl.focus(); },60);
+    // initialize UI with current stored appearance
+    applyAppearanceFromStorage();
+    applyLogoFromStorage();
   }
   function closeSettings(){
     winSettings.style.display='none';
   }
 
   // attach Start menu item and tile to open settings
-  // find the app-item node that contains "Settings"
   Array.from(startAppList.querySelectorAll('.app-item')).forEach(it=>{
     if((it.textContent||'').toLowerCase().includes('settings')){
       it.style.cursor='pointer';
@@ -644,7 +742,6 @@
   settingsClose.addEventListener('click', ()=>{ if(isLocked()){focusPin();return} if(confirm('Close settings?')) closeSettings(); });
   settingsFull.addEventListener('click', ()=>{ if(isLocked()){focusPin();return} if(!winSettings.classList.contains('fullscreen')){ try{winSettings.dataset.prev=JSON.stringify({left:winSettings.style.left||'',top:winSettings.style.top||'',width:winSettings.style.width||'',height:winSettings.style.height||'',borderRadius:winSettings.style.borderRadius||''})}catch(e){}winSettings.classList.add('fullscreen');winSettings.style.left='';winSettings.style.top='';winSettings.style.width='';winSettings.style.height='';winSettings.style.borderRadius='0'} else { try{const prev=winSettings.dataset.prev?JSON.parse(winSettings.dataset.prev):null;if(prev){winSettings.style.left=prev.left||'';winSettings.style.top=prev.top||'';winSettings.style.width=prev.width||'';winSettings.style.height=prev.height||'';winSettings.style.borderRadius=prev.borderRadius||''}}catch(e){}winSettings.classList.remove('fullscreen') } });
 
-  // Make settings window draggable (reuse the draggable pattern)
   (function makeDraggableSettings(){const header=winSettings.querySelector('[data-drag="true"]');let dragging=false,sx=0,sy=0,ox=0,oy=0;header.addEventListener('mousedown',e=>{if(winSettings.classList.contains('fullscreen')) return; if(isLocked()){focusPin();return}dragging=true;sx=e.clientX;sy=e.clientY;const r=winSettings.getBoundingClientRect();ox=r.left;oy=r.top;header.style.cursor='grabbing'});window.addEventListener('mousemove',e=>{if(!dragging) return;const dx=e.clientX-sx,dy=e.clientY-sy;winSettings.style.left=Math.max(8,ox+dx)+'px';winSettings.style.top=Math.max(8,oy+dy)+'px'});window.addEventListener('mouseup',()=>{dragging=false;header.style.cursor='grab'})})();
 
   // Helper: clicking the Settings "Wallpaper" category scrolls or focuses the wallpaper area
@@ -654,23 +751,269 @@
   });
 
   /* Set simple desktop icon for Settings so users can drag/launch from desktop */
-  // add to desktopItems if it doesn't exist
   (function ensureSettingsIcon(){
     const exists = desktopItems.find(i=>i.title==='Settings' || i.id==='settings');
     if(!exists){
-      // use the settings.png path as the icon HTML so it shows everywhere (desktop, taskbar pins)
-      const imgHtml = '<img src="settings.png" alt="Settings" style="width:36px;height:36px;object-fit:contain;border-radius:8px;display:block">';
-      desktopItems.push({id:'settings', title:'Settings', icon: imgHtml, action:'open-settings'});
+      desktopItems.push({id:'settings', title:'Settings', icon:'⚙️', action:'open-settings'});
       renderDesktop();
     }
   })();
 
-  // ensure the tile in start also opens settings (also handled above)
+  /* Ensure Files app icon and desktop folder "Apps" (desktop folder) */
+  (function ensureFilesAndDesktopFolder(){
+    const hasFiles = desktopItems.find(i=>i.id==='files' || i.title==='Files');
+    if(!hasFiles){
+      desktopItems.push({id:'files', title:'Files', icon:'📁', action:'open-files'});
+    }
+    const desktopFolderExists = desktopItems.find(i=>i.id==='apps-folder');
+    if(!desktopFolderExists){
+      desktopItems.push({id:'apps-folder', title:'Apps', icon:'🗂️', action:'open-files'});
+    }
+    renderDesktop();
+  })();
 
-  /* Apply persisted wallpaper on load again (safety) */
-  loadWallpaperFromStorage();
+  /* ---------------------------
+     Appearance & Logo (hotswap) behavior (ADDED)
+     ---------------------------*/
 
-  /* end settings app behavior */
+  function applyAppearanceFromStorage(){
+    try{
+      const raw = localStorage.getItem(STORAGE_APPEAR);
+      if(!raw) return;
+      const obj = JSON.parse(raw);
+      if(obj.taskbarBg) document.documentElement.style.setProperty('--taskbar-bg', obj.taskbarBg);
+      if(obj.iconBg) document.documentElement.style.setProperty('--taskbar-icon-bg', obj.iconBg);
+      if(obj.iconActive) document.documentElement.style.setProperty('--taskbar-icon-active-bg', obj.iconActive);
+
+      if(taskbarBgPicker && obj.taskbarBg) {
+        const parsed = rgbaStringToParts(obj.taskbarBg);
+        taskbarBgPicker.value = parsed.hex;
+        taskbarBgAlpha.value = Math.round(parsed.a * 100);
+        taskbarBgAlphaLabel.textContent = parsed.a.toFixed(2);
+      }
+      if(iconBgPicker && obj.iconBg){
+        const parsed = rgbaStringToParts(obj.iconBg);
+        iconBgPicker.value = parsed.hex;
+        iconBgAlpha.value = Math.round(parsed.a * 100);
+        iconBgAlphaLabel.textContent = parsed.a.toFixed(2);
+      }
+      if(iconActivePicker && obj.iconActive){
+        const parsed = rgbaStringToParts(obj.iconActive);
+        iconActivePicker.value = parsed.hex;
+        iconActiveAlpha.value = Math.round(parsed.a * 100);
+        iconActiveAlphaLabel.textContent = parsed.a.toFixed(2);
+      }
+    }catch(e){}
+  }
+
+  function applyLogoFromStorage(){
+    try{
+      const raw = localStorage.getItem(STORAGE_LOGO);
+      if(!raw) return;
+      if(startLogo) startLogo.src = raw;
+    }catch(e){}
+  }
+
+  function rgbaStringToParts(rgba){
+    // expected input: 'rgba(r,g,b,a)' or '#rrggbb' (fallback)
+    try{
+      if(!rgba) return {r:255,g:255,b:255,a:1,hex:'#ffffff'};
+      const m = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/);
+      if(m){
+        const r = parseInt(m[1]), g = parseInt(m[2]), b = parseInt(m[3]); const a = m[4]?parseFloat(m[4]):1;
+        return {r,g,b,a,hex: rgbToHex(r,g,b)};
+      }
+      // fallback hex
+      if(rgba[0]==='#'){
+        const hex = rgba;
+        const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+        return {r,g,b,a:1,hex};
+      }
+    }catch(e){}
+    return {r:255,g:255,b:255,a:1,hex:'#ffffff'};
+  }
+
+  function rgbToHex(r,g,b){ return '#'+ [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+
+  function hexToRgb(hex){
+    if(!hex) return {r:255,g:255,b:255};
+    const h = hex.replace('#','');
+    return { r: parseInt(h.substring(0,2),16), g: parseInt(h.substring(2,4),16), b: parseInt(h.substring(4,6),16) };
+  }
+
+  function hexAndAlphaToRgbaStr(hex, alphaPercent){
+    const a = Math.max(0, Math.min(100, Number(alphaPercent||0)))/100;
+    const rgb = hexToRgb(hex);
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${a})`;
+  }
+
+  // update labels initially
+  function updateAlphaLabels(){
+    taskbarBgAlphaLabel.textContent = (Number(taskbarBgAlpha.value)/100).toFixed(2);
+    iconBgAlphaLabel.textContent = (Number(iconBgAlpha.value)/100).toFixed(2);
+    iconActiveAlphaLabel.textContent = (Number(iconActiveAlpha.value)/100).toFixed(2);
+  }
+  updateAlphaLabels();
+
+  // live apply when pickers or alpha sliders change
+  if(taskbarBgPicker){
+    taskbarBgPicker.addEventListener('input', ()=>{
+      const rgba = hexAndAlphaToRgbaStr(taskbarBgPicker.value, taskbarBgAlpha.value);
+      document.documentElement.style.setProperty('--taskbar-bg', rgba);
+    });
+  }
+  if(taskbarBgAlpha){
+    taskbarBgAlpha.addEventListener('input', ()=>{
+      updateAlphaLabels();
+      const rgba = hexAndAlphaToRgbaStr(taskbarBgPicker.value, taskbarBgAlpha.value);
+      document.documentElement.style.setProperty('--taskbar-bg', rgba);
+    });
+  }
+
+  if(iconBgPicker){
+    iconBgPicker.addEventListener('input', ()=>{
+      const rgba = hexAndAlphaToRgbaStr(iconBgPicker.value, iconBgAlpha.value);
+      document.documentElement.style.setProperty('--taskbar-icon-bg', rgba);
+    });
+  }
+  if(iconBgAlpha){
+    iconBgAlpha.addEventListener('input', ()=>{
+      updateAlphaLabels();
+      const rgba = hexAndAlphaToRgbaStr(iconBgPicker.value, iconBgAlpha.value);
+      document.documentElement.style.setProperty('--taskbar-icon-bg', rgba);
+    });
+  }
+
+  if(iconActivePicker){
+    iconActivePicker.addEventListener('input', ()=>{
+      const rgba = hexAndAlphaToRgbaStr(iconActivePicker.value, iconActiveAlpha.value);
+      document.documentElement.style.setProperty('--taskbar-icon-active-bg', rgba);
+    });
+  }
+  if(iconActiveAlpha){
+    iconActiveAlpha.addEventListener('input', ()=>{
+      updateAlphaLabels();
+      const rgba = hexAndAlphaToRgbaStr(iconActivePicker.value, iconActiveAlpha.value);
+      document.documentElement.style.setProperty('--taskbar-icon-active-bg', rgba);
+    });
+  }
+
+  // file upload -> dataURL -> live update + persist (on change)
+  if(logoFile){
+    logoFile.addEventListener('change', (ev)=>{
+      const f = ev.target.files && ev.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        const url = e.target.result;
+        if(startLogo) startLogo.src = url;
+        try{ localStorage.setItem(STORAGE_LOGO, url); }catch(e){}
+      };
+      reader.readAsDataURL(f);
+    });
+  }
+
+  if(applyLogoUrl){
+    applyLogoUrl.addEventListener('click', ()=>{
+      const v = (logoUrl.value||'').trim();
+      if(!v) return alert('Enter a logo URL first.');
+      if(startLogo) startLogo.src = v;
+      try{ localStorage.setItem(STORAGE_LOGO, v); }catch(e){}
+    });
+  }
+
+  if(saveAppearance){
+    saveAppearance.addEventListener('click', ()=>{
+      const obj = {
+        taskbarBg: getComputedStyle(document.documentElement).getPropertyValue('--taskbar-bg').trim(),
+        iconBg: getComputedStyle(document.documentElement).getPropertyValue('--taskbar-icon-bg').trim(),
+        iconActive: getComputedStyle(document.documentElement).getPropertyValue('--taskbar-icon-active-bg').trim()
+      };
+      try{ localStorage.setItem(STORAGE_APPEAR, JSON.stringify(obj)); alert('Appearance saved.'); }catch(e){ alert('Could not save appearance.'); }
+    });
+  }
+
+  if(resetAppearance){
+    resetAppearance.addEventListener('click', ()=>{
+      if(!confirm('Reset appearance to defaults?')) return;
+      localStorage.removeItem(STORAGE_APPEAR);
+      localStorage.removeItem(STORAGE_LOGO);
+      document.documentElement.style.setProperty('--taskbar-bg', 'rgba(255,255,255,0.20)');
+      document.documentElement.style.setProperty('--taskbar-icon-bg', 'rgba(255,255,255,0.12)');
+      document.documentElement.style.setProperty('--taskbar-icon-active-bg', 'rgba(255,255,255,0.22)');
+      if(startLogo) startLogo.src = '/mnt/data/settings.png';
+      // reset pickers and alphas
+      if(taskbarBgPicker) taskbarBgPicker.value = '#ffffff';
+      if(iconBgPicker) iconBgPicker.value = '#ffffff';
+      if(iconActivePicker) iconActivePicker.value = '#ffffff';
+      if(taskbarBgAlpha) taskbarBgAlpha.value = '20';
+      if(iconBgAlpha) iconBgAlpha.value = '12';
+      if(iconActiveAlpha) iconActiveAlpha.value = '22';
+      updateAlphaLabels();
+      alert('Appearance reset.');
+    });
+  }
+
+  // initialize appearance/logo from storage (on load)
+  applyAppearanceFromStorage();
+  applyLogoFromStorage();
+
+  /* ---------------------------
+     Minimal File Manager wiring (ADDED)
+     ---------------------------*/
+
+  function openFiles(){
+    if(isLocked()){focusPin();return}
+    winFiles.style.display='flex';
+    bringToFront(winFiles);
+    renderFilesList();
+  }
+
+  function closeFiles(){
+    winFiles.style.display='none';
+  }
+
+  function renderFilesList(){
+    if(!filesList) return;
+    filesList.innerHTML='';
+    const apps = desktopItems.map(i=>({name:i.title, icon:i.icon, id:i.id}));
+    apps.forEach(a=>{
+      const el=document.createElement('div');
+      el.style.width='140px';
+      el.style.height='120px';
+      el.style.background='#fff';
+      el.style.borderRadius='8px';
+      el.style.display='flex';
+      el.style.flexDirection='column';
+      el.style.alignItems='center';
+      el.style.justifyContent='center';
+      el.style.boxShadow='inset 0 -20px 40px rgba(0,0,0,.02)';
+      el.style.cursor='pointer';
+      el.innerHTML=`<div style="font-size:28px">${a.icon}</div><div style="margin-top:8px;font-size:13px">${a.name}</div>`;
+      el.addEventListener('dblclick', ()=> {
+        const item = desktopItems.find(d=>d.id===a.id);
+        if(!item) return;
+        handleDesktopAction(item);
+      });
+      filesList.appendChild(el);
+    });
+  }
+
+  if(desktopFolderOpen){
+    desktopFolderOpen.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      openFiles();
+    });
+  }
+
+  if(filesClose) filesClose.addEventListener('click', ()=>{ closeFiles(); });
+  if(filesMin) filesMin.addEventListener('click', ()=>{ winFiles.style.display='none'; });
+  if(filesFull) filesFull.addEventListener('click', ()=>{ if(!winFiles.classList.contains('fullscreen')){ try{winFiles.dataset.prev=JSON.stringify({left:winFiles.style.left||'',top:winFiles.style.top||'',width:winFiles.style.width||'',height:winFiles.style.height||'',borderRadius:winFiles.style.borderRadius||''})}catch(e){}winFiles.classList.add('fullscreen');winFiles.style.left='';winFiles.style.top='';winFiles.style.width='';winFiles.style.height='';winFiles.style.borderRadius='0'} else { try{const prev=winFiles.dataset.prev?JSON.parse(winFiles.dataset.prev):null;if(prev){winFiles.style.left=prev.left||'';winFiles.style.top=prev.top||'';winFiles.style.width=prev.width||'';winFiles.style.height=prev.height||'';winFiles.style.borderRadius=prev.borderRadius||''}}catch(e){}winFiles.classList.remove('fullscreen') } });
+
+  /* Small UI behaviors and initialization */
+  loadAll();
+  renderDesktop();
+  renderTaskbarPins();
 })();
 </script>
 </body>
